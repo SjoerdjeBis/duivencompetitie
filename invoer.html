@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Uitslag invoeren — Duivencompetitie</title>
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="logo">🕊️</div>
+      <div>
+        <h1 id="titel">Duivencompetitie</h1>
+        <div class="sub">Uitslag invoeren</div>
+      </div>
+      <nav class="tabs">
+        <a href="./index.html">Tussenstand</a>
+        <a href="./invoer.html" class="active">Uitslag invoeren</a>
+      </nav>
+    </header>
+
+    <div id="banner"></div>
+
+    <div class="card">
+      <div class="veld">
+        <label for="vlucht">Vluchtnummer</label>
+        <input id="vlucht" type="number" min="1" inputmode="numeric" style="width:120px">
+      </div>
+      <p class="sub" style="margin:-4px 0 16px">
+        Typ per aankomstplek de <strong>laatste 3 cijfers</strong> van het ringnummer.
+        De naam verschijnt er direct bij ter controle.
+      </p>
+      <div id="rijen" class="invoer-grid"></div>
+
+      <div id="melding"></div>
+      <div class="knoppen">
+        <button id="verzend" class="primary" type="button">Uitslag verzenden</button>
+        <button id="wis" class="ghost" type="button">Leegmaken</button>
+      </div>
+    </div>
+
+    <footer class="app">Een Goed Stel Duifjes ✦</footer>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./assets/scoring.js"></script>
+  <script src="./assets/api.js"></script>
+  <script src="./assets/invoer.js"></script>
+</body>
+</html>

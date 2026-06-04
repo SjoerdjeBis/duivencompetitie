@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL \"https://docs.google.com/spreadsheets/d/1oLS5SronWWau40NPBEkwzrj011vNAaUwmV5CkTEnbS8/export?format=xlsx\" -o duivencompetitie.xlsx)",
+      "mcp__Claude_in_Chrome__javascript_tool"
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+:root {
+  --bg: #f4f1ea;
+  --card: #ffffff;
+  --ink: #23211c;
+  --muted: #7a756b;
+  --line: #e7e1d6;
+  --accent: #2f6d56;       /* duif-groen */
+  --accent-soft: #e3efe9;
+  --gold: #d9a531;
+  --silver: #b9bcc2;
+  --bronze: #c8835a;
+  --danger: #c0432f;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
+  --radius: 14px;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+.wrap { max-width: 880px; margin: 0 auto; padding: 20px 16px 64px; }
+
+/* ---- Kop ---- */
+header.app {
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 4px 20px;
+}
+header.app .logo {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-size: 24px; flex: none;
+  box-shadow: var(--shadow);
+}
+header.app h1 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
+header.app .sub { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+
+nav.tabs { display: flex; gap: 8px; margin-left: auto; }
+nav.tabs a {
+  text-decoration: none; color: var(--muted); font-weight: 600; font-size: .9rem;
+  padding: 8px 14px; border-radius: 999px; border: 1px solid transparent;
+}
+nav.tabs a.active { color: var(--accent); background: var(--accent-soft); }
+nav.tabs a:hover { border-color: var(--line); }
+
+/* ---- Kaarten ---- */
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 18px; margin-bottom: 18px;
+}
+.card h2 { margin: 0 0 14px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.card h2 .count { color: var(--muted); font-weight: 500; font-size: .85rem; }
+
+.banner {
+  font-size: .85rem; padding: 10px 14px; border-radius: 10px;
+  background: #fff7e6; border: 1px solid #f0e0b8; color: #7a5b15; margin-bottom: 16px;
+}
+.banner.live { background: var(--accent-soft); border-color: #cfe6da; color: #285c48; }
+
+/* ---- Klassement ---- */
+ol.klassement { list-style: none; margin: 0; padding: 0; }
+ol.klassement li {
+  display: grid; grid-template-columns: 38px 1fr auto auto; align-items: center; gap: 10px;
+  padding: 11px 6px; border-bottom: 1px solid var(--line);
+}
+ol.klassement li:last-child { border-bottom: 0; }
+.rang {
+  font-variant-numeric: tabular-nums; font-weight: 700; color: var(--muted);
+  text-align: center; width: 30px; height: 30px; line-height: 30px; border-radius: 8px;
+}
+li.top1 .rang { background: var(--gold); color: #fff; }
+li.top2 .rang { background: var(--silver); color: #fff; }
+li.top3 .rang { background: var(--bronze); color: #fff; }
+.naam { font-weight: 600; }
+.delta { font-size: .78rem; font-weight: 700; }
+.delta.up { color: var(--accent); }
+.delta.down { color: var(--danger); }
+.delta.flat { color: var(--muted); }
+.score { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; }
+.score .pt { color: var(--muted); font-weight: 500; font-size: .75rem; }
+.laatste-badge {
+  font-size: .72rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-soft); padding: 2px 7px; border-radius: 999px;
+}
+
+/* ---- Lijstjes (laatste vlucht / beste duiven) ---- */
+.tweekolom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+ul.lijst { list-style: none; margin: 0; padding: 0; }
+ul.lijst li {
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  padding: 8px 4px; border-bottom: 1px dashed var(--line);
+}
+ul.lijst li:last-child { border-bottom: 0; }
+ul.lijst .v { color: var(--muted); font-size: .82rem; }
+ul.lijst .p { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* ---- Invoer ---- */
+.invoer-grid { display: grid; gap: 8px; }
+.pos-rij {
+  display: grid; grid-template-columns: 34px 84px 1fr; gap: 10px; align-items: center;
+}
+.pos-rij .pos-nr { color: var(--muted); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.pos-rij input {
+  font-size: 1.1rem; padding: 10px; border: 1px solid var(--line); border-radius: 10px;
+  width: 100%; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: .12em;
+  background: #fff;
+}
+.pos-rij input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.pos-rij .resolved { font-size: .92rem; min-height: 1.2em; }
+.resolved.ok { color: var(--ink); }
+.resolved.ok .team { color: var(--muted); font-size: .82rem; }
+.resolved.warn { color: var(--danger); font-weight: 600; }
+.resolved.empty { color: var(--line); }
+.pos-rij.dup input { border-color: var(--danger); background: #fdf0ee; }
+
+.knoppen { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border: 0; border-radius: 10px;
+  padding: 11px 18px;
+}
+button.primary { background: var(--accent); color: #fff; }
+button.primary:disabled { background: var(--silver); cursor: not-allowed; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+
+.veld { margin-bottom: 14px; }
+.veld label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+.veld input, .veld select {
+  font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
+}
+
+.melding { padding: 12px 14px; border-radius: 10px; margin: 12px 0; font-size: .92rem; }
+.melding.fout { background: #fdf0ee; border: 1px solid #f1c9c0; color: var(--danger); }
+.melding.ok { background: var(--accent-soft); border: 1px solid #cfe6da; color: #285c48; }
+
+.loading, .leeg { color: var(--muted); text-align: center; padding: 28px; }
+
+footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 8px; }
+
+@media (max-width: 620px) {
+  header.app { flex-wrap: wrap; }
+  nav.tabs { margin-left: 0; width: 100%; }
+  .tweekolom { grid-template-columns: 1fr; }
+  ol.klassement li { grid-template-columns: 34px 1fr auto; }
+  ol.klassement li .delta { display: none; }
+}
