@@ -1,2 +1,4 @@
 .DS_Store
 *.log
+.claude/
+duiven_seed.json
