@@ -62,8 +62,11 @@
     const punten = {};
     (raw.punten || []).forEach(p => { punten[Number(p.positie)] = Number(p.punten); });
 
+    // Expliciete deelnemerslijst (in invoervolgorde) — los van de duiven.
+    const deelnemers = (raw.deelnemers || []).map(r => r.naam).filter(Boolean);
+
     // Roster van deelnemers: expliciete lijst + alles wat in teams voorkomt.
-    const roster = new Set((raw.deelnemers || []).map(r => r.naam).filter(Boolean));
+    const roster = new Set(deelnemers);
     duiven.forEach(d => d.teams.forEach(t => roster.add(t)));
 
     // Resultaten groeperen per vlucht.
@@ -80,7 +83,7 @@
     const vluchten = Object.keys(vluchtenMap).map(Number).sort((a, b) => a - b)
       .map(nr => ({ nummer: nr, finishers: vluchtenMap[nr].sort((a, b) => a.positie - b.positie) }));
 
-    return { duiven, byKort, byNaam, punten, roster, vluchten };
+    return { duiven, byKort, byNaam, punten, roster, deelnemers, vluchten };
   }
 
   /** Zoekt de duif bij een finisher-regel.

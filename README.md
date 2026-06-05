@@ -7,6 +7,7 @@ een **mooie, openbare tussenstand** uit.
 
 - **Tussenstand** (openbaar): `index.html`
 - **Uitslag invoeren**: `invoer.html`
+- **Seizoen voorbereiden** (deelnemers + duiven klaarzetten): `voorbereiden.html`
 
 De site is volledig statisch (draait op **GitHub Pages**, geen build-stap). De
 **Google Sheet** blijft de database; een klein **Apps Script** is de gratis lijm
@@ -21,11 +22,11 @@ Browser ──► GitHub Pages (deze site) ──► Apps Script Web App ──�
 
 | Pad | Wat |
 |---|---|
-| `index.html` / `invoer.html` | De twee pagina's |
+| `index.html` / `invoer.html` / `voorbereiden.html` | De drie pagina's |
 | `config.js` | **Het enige bestand dat je invult** (API-URL, titel) |
 | `assets/scoring.js` | Reken-/datalogica (gedeeld door live én demo) |
-| `assets/api.js` | Laadt data / verstuurt uitslagen |
-| `assets/tussenstand.js`, `assets/invoer.js` | De twee pagina's |
+| `assets/api.js` | Laadt data / verstuurt uitslagen + seizoensopzet |
+| `assets/tussenstand.js`, `assets/invoer.js`, `assets/voorbereiden.js` | De drie pagina's |
 | `assets/styles.css` | Vormgeving |
 | `data/*.csv` | Gemigreerde seed-data (duiven, resultaten, punten, deelnemers) |
 | `apps-script/Setup.gs` | Eénmalig: bouwt de Sheet-tabbladen + vult ze met je data |
@@ -73,6 +74,21 @@ verschijnen direct ter controle. Bijzonderheden worden afgevangen:
 - **Onbekend ringnummer** → je kunt er een naam bij typen (bv. een reserve-duif).
 - **Twee duiven met dezelfde 3 cijfers** → je kiest welke je bedoelt.
 - **Dubbel ingevoerd** → wordt rood gemarkeerd en blokkeert verzenden.
+
+## Seizoen voorbereiden
+
+Op `voorbereiden.html` zet je aan het begin van het seizoen alles klaar:
+
+- **Deelnemers**: vorig jaar staat aangevinkt klaar — vink af wie stopt, pas namen
+  aan (naamswijziging) en voeg nieuwe deelnemers toe.
+- **Duiven**: plak de **lange ringnummers** (één per regel); de **korte code**
+  (laatste 3 cijfers) wordt automatisch afgeleid. Duiven die op dezelfde 3 cijfers
+  eindigen worden gemarkeerd, want die vragen bij het invoeren om een keuze.
+
+Opslaan vervangt de tabbladen `Deelnemers` en `Duivendatabase` (de duiven krijgen
+nog géén naam/team — dat gebeurt later op het keuzemoment). Optioneel wis je ook de
+uitslagen van vorig jaar. In demo-modus gebruik je de **kopieerknoppen** om de
+lijsten in je Sheet te plakken.
 
 ## Datamodel
 

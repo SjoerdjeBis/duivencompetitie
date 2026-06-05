@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keuzemoment — Duivencompetitie</title>
+  <link rel="icon" href="./assets/logo.png">
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
+      <div>
+        <h1 id="titel">Duivencompetitie</h1>
+        <div class="sub">Keuzemoment</div>
+      </div>
+      <nav class="tabs">
+        <a href="./index.html">Tussenstand</a>
+        <a href="./invoer.html">Uitslag invoeren</a>
+        <a href="./voorbereiden.html">Voorbereiden</a>
+        <a href="./keuzemoment.html" class="active">Keuzemoment</a>
+      </nav>
+    </header>
+
+    <div id="banner"></div>
+
+    <!-- ============ 1. OPZET ============ -->
+    <section id="scherm-opzet" class="scherm">
+      <div class="card">
+        <h2>Draft-volgorde <span class="count" id="opzet-telling"></span></h2>
+        <p class="sub" style="margin:-6px 0 14px">
+          De teams kiezen in <strong>omgekeerde volgorde van de eindstand van vorig jaar</strong>
+          (de onderste eerst). Klopt de volgorde? Sleep met ▲▼ om te schuiven.
+          Elk team kiest in één beurt al zijn duiven.
+        </p>
+        <ol id="opzet-volgorde" class="opzet-volgorde"></ol>
+
+        <div class="veld" style="margin-top:18px">
+          <label for="per-team">Richtgetal duiven per team</label>
+          <input id="per-team" type="number" min="1" max="50" style="width:90px">
+          <span class="sub">— je kunt per team alsnog eerder stoppen of er één bij doen.</span>
+        </div>
+
+        <div id="opzet-melding"></div>
+        <div class="knoppen">
+          <button id="start-draft" class="primary" type="button">Start het keuzemoment →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2. BEURT ============ -->
+    <section id="scherm-beurt" class="scherm verborgen">
+      <div class="beurt-kop card">
+        <div class="beurt-info">
+          <div class="beurt-label">Aan de beurt <span id="beurt-positie" class="count"></span></div>
+          <div class="beurt-team" id="beurt-team">—</div>
+        </div>
+        <div class="beurt-voortgang" id="beurt-voortgang"></div>
+      </div>
+
+      <!-- 2a. methodekeuze -->
+      <div id="methode-keuze" class="card methode-keuze">
+        <h2 id="methode-vraag">Hoe wil dit team zijn duiven kiezen?</h2>
+        <div class="methode-knoppen">
+          <button class="methode zelf" data-methode="zelf" type="button">
+            <span class="ikoon">👆</span>
+            <span class="m-titel">Zelf kiezen</span>
+            <span class="m-uitleg">Klik nummers uit de beschikbare lijst</span>
+          </button>
+          <button class="methode willekeurig" data-methode="willekeurig" type="button">
+            <span class="ikoon">🥚</span>
+            <span class="m-titel">Willekeurig</span>
+            <span class="m-uitleg">Een duif vist een ei uit de kom</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2b. ZELF kiezen -->
+      <div id="paneel-zelf" class="card paneel verborgen">
+        <h2>Beschikbare nummers <span class="count" id="zelf-telling"></span></h2>
+        <p class="sub" style="margin:-6px 0 12px">Klik een nummer aan en geef de duif een naam.</p>
+        <div id="zelf-grid" class="zelf-grid"></div>
+      </div>
+
+      <!-- 2c. WILLEKEURIG -->
+      <div id="paneel-willekeurig" class="card paneel verborgen">
+        <div class="kom-wrap">
+          <div class="duif-laag"><div class="duif" id="duif">🕊️</div></div>
+          <div class="kom" id="kom">
+            <div class="kom-eieren" id="kom-eieren"></div>
+            <div class="kom-glas"></div>
+            <div class="kom-rand"></div>
+          </div>
+          <div class="podium" id="podium">
+            <div class="vlieg-ei verborgen" id="vlieg-ei">
+              <div class="dop onder"></div>
+              <div class="dop boven"></div>
+              <div class="ei-glans"></div>
+            </div>
+            <div class="nummer-kaart verborgen" id="nummer-kaart">
+              <div class="nk-label">ringnummer</div>
+              <div class="nk-kort" id="nk-kort">—</div>
+              <div class="nk-lang" id="nk-lang"></div>
+            </div>
+          </div>
+        </div>
+        <div class="knoppen midden">
+          <button id="kies-knop" class="primary groot" type="button">Kies een nummer 🥚</button>
+        </div>
+      </div>
+
+      <!-- gekozen door dit team -->
+      <div class="card" id="team-picks-kaart">
+        <h2>Gekozen door <span id="picks-team"></span> <span class="count" id="picks-telling"></span></h2>
+        <ul id="team-picks" class="team-picks"></ul>
+        <div class="knoppen">
+          <button id="team-klaar" class="primary" type="button">Team klaar → volgende</button>
+          <button id="nog-een" class="ghost verborgen" type="button">+ Nog een duif</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. KLAAR ============ -->
+    <section id="scherm-klaar" class="scherm verborgen">
+      <div class="card">
+        <h2>🎉 Het keuzemoment is klaar!</h2>
+        <p class="sub" id="klaar-samenvatting"></p>
+        <div id="klaar-overzicht" class="klaar-overzicht"></div>
+        <div class="knoppen">
+          <a class="knop-link" href="./index.html">Naar de tussenstand</a>
+          <button id="kopieer-keuze" class="ghost" type="button">Kopieer alle keuzes</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Naam-modal (gedeeld) ===== -->
+    <div id="naam-overlay" class="overlay verborgen">
+      <div class="modal">
+        <div class="modal-ei">🥚</div>
+        <div class="modal-nummer">
+          <div class="mn-kort" id="mn-kort">—</div>
+          <div class="mn-lang" id="mn-lang"></div>
+        </div>
+        <label for="duif-naam" class="modal-label">Geef deze duif een naam</label>
+        <input id="duif-naam" type="text" placeholder="Naam van de duif" autocomplete="off" maxlength="40">
+        <div class="knoppen midden">
+          <button id="naam-terug" class="ghost" type="button">← Terug</button>
+          <button id="naam-ok" class="primary" type="button">Vastleggen</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="app">Een Goed Stel Duifjes ✦</footer>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./assets/scoring.js"></script>
+  <script src="./assets/api.js"></script>
+  <script src="./assets/keuzemoment.js"></script>
+</body>
+</html>

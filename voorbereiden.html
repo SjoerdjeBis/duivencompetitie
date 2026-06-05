@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seizoen voorbereiden — Duivencompetitie</title>
+  <link rel="icon" href="./assets/logo.png">
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
+      <div>
+        <h1 id="titel">Duivencompetitie</h1>
+        <div class="sub">Seizoen voorbereiden</div>
+      </div>
+      <nav class="tabs">
+        <a href="./index.html">Tussenstand</a>
+        <a href="./invoer.html">Uitslag invoeren</a>
+        <a href="./voorbereiden.html" class="active">Voorbereiden</a>
+        <a href="./keuzemoment.html">Keuzemoment</a>
+      </nav>
+    </header>
+
+    <div id="banner"></div>
+
+    <p class="sub" style="margin:0 0 18px">
+      Zet aan het begin van het seizoen de <strong>deelnemers</strong> en de
+      <strong>duiven</strong> klaar. De duiven krijgen later — op het keuzemoment —
+      pas een eigenaar en een naam.
+    </p>
+
+    <!-- ===== Deelnemers ===== -->
+    <div class="card">
+      <h2>Deelnemers <span class="count" id="deelnemers-telling"></span></h2>
+      <p class="sub" style="margin:-6px 0 14px">
+        Vink aan wie dit jaar meedoet. Een naam aanpassen mag (naamswijziging),
+        en onderaan voeg je nieuwe deelnemers toe.
+      </p>
+      <div id="deelnemers-lijst" class="deelnemers-lijst"></div>
+      <div class="knoppen" style="margin-top:12px">
+        <button id="deelnemer-toevoegen" class="ghost" type="button">+ Nieuwe deelnemer</button>
+      </div>
+    </div>
+
+    <!-- ===== Duiven ===== -->
+    <div class="card">
+      <h2>Duiven <span class="count" id="duiven-telling"></span></h2>
+      <p class="sub" style="margin:-6px 0 12px">
+        Plak hier de <strong>lange ringnummers</strong> — één per regel (of gescheiden
+        door spaties/komma's). Ik maak er automatisch de korte code (laatste 3 cijfers)
+        van.
+      </p>
+      <textarea id="ringnummers" class="ringinvoer" rows="7"
+        placeholder="1102789&#10;1102851&#10;1102781&#10;…" autocomplete="off" spellcheck="false"></textarea>
+      <div id="duiven-preview" class="duiven-preview"></div>
+      <div id="duiven-waarschuwing"></div>
+    </div>
+
+    <!-- ===== Opslaan ===== -->
+    <div class="card">
+      <label class="wis-optie">
+        <input type="checkbox" id="wis-uitslagen">
+        Ook de uitslagen van vorig seizoen wissen (echt nieuw seizoen, begint op 0)
+      </label>
+      <div id="melding"></div>
+      <div class="knoppen">
+        <button id="opslaan" class="primary" type="button">Seizoen opslaan</button>
+        <button id="kopieer-deelnemers" class="ghost" type="button">Kopieer deelnemers</button>
+        <button id="kopieer-duiven" class="ghost" type="button">Kopieer duiven</button>
+      </div>
+      <p class="sub" id="kopieer-uitleg" style="margin:10px 0 0; display:none">
+        In demo-modus kun je nog niet rechtstreeks opslaan. Gebruik de kopieerknoppen
+        en plak de regels in de tabbladen <code>Deelnemers</code> en
+        <code>Duivendatabase</code> van je Sheet.
+      </p>
+    </div>
+
+    <footer class="app">Een Goed Stel Duifjes ✦</footer>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./assets/scoring.js"></script>
+  <script src="./assets/api.js"></script>
+  <script src="./assets/voorbereiden.js"></script>
+</body>
+</html>

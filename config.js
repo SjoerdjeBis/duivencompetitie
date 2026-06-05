@@ -9,8 +9,12 @@ window.DUIVEN_CONFIG = {
   API_URL: "",
 
   // Titel bovenaan de pagina's.
-  SEIZOEN: "Duivencompetitie 2026",
+  SEIZOEN: "Duivencompetitie 2025",
 
   // Aantal posities (aankomstplekken) dat je per vlucht invult.
-  AANTAL_POSITIES: 25
+  AANTAL_POSITIES: 25,
+
+  // Keuzemoment: richtgetal voor hoeveel duiven elk team kiest (je kunt tijdens
+  // de draft per team eerder stoppen of een extra duif toevoegen).
+  DUIVEN_PER_TEAM: 8
 };

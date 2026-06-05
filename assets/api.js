@@ -45,12 +45,9 @@
     return { model: Scoring.buildModel(raw), live: false };
   }
 
-  /**
-   * Stuurt een nieuwe vlucht-uitslag in.
-   * @param {{vlucht:number, finishers:Array<{ring_kort:string, naam_override?:string}>}} payload
-   */
-  async function submitUitslag(payload) {
-    if (!isLive()) throw new Error('Inzenden kan alleen in live-modus (stel API_URL in config.js in).');
+  /** Stuurt een JSON-payload via POST naar de Apps Script Web App. */
+  async function postJSON(payload) {
+    if (!isLive()) throw new Error('Opslaan kan alleen in live-modus (stel API_URL in config.js in).');
     const res = await fetch(cfg().API_URL, {
       method: 'POST',
       // text/plain voorkomt een CORS-preflight die Apps Script niet kan beantwoorden.
@@ -62,5 +59,29 @@
     return data;
   }
 
-  global.API = { loadModel, submitUitslag, isLive };
+  /**
+   * Stuurt een nieuwe vlucht-uitslag in.
+   * @param {{vlucht:number, finishers:Array<{ring_kort:string, naam_override?:string}>}} payload
+   */
+  function submitUitslag(payload) {
+    return postJSON(Object.assign({ action: 'uitslag' }, payload));
+  }
+
+  /**
+   * Slaat de seizoensvoorbereiding op: vervangt de deelnemers- en duivenlijst.
+   * @param {{deelnemers:string[], duiven:Array<{ring_lang:string, ring_kort:string}>, wisUitslagen?:boolean}} payload
+   */
+  function saveSeizoen(payload) {
+    return postJSON(Object.assign({ action: 'setupSeizoen' }, payload));
+  }
+
+  /**
+   * Legt een keuze van het keuzemoment vast: zet naam + team op een duif.
+   * @param {{ring_kort?:string, ring_lang?:string, naam:string, team:string}} payload
+   */
+  function kiesDuif(payload) {
+    return postJSON(Object.assign({ action: 'kiesDuif' }, payload));
+  }
+
+  global.API = { loadModel, submitUitslag, saveSeizoen, kiesDuif, isLive };
 })(typeof window !== 'undefined' ? window : globalThis);
