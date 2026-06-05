@@ -6,7 +6,7 @@
  */
 window.DUIVEN_CONFIG = {
   // Bijvoorbeeld: "https://script.google.com/macros/s/AKfy...../exec"
-  API_URL: "",
+  API_URL: "https://script.google.com/macros/s/AKfycbyVlL3TGQX2IY3yBG4v5RD4w7bQmfqx3cazGVSm60Ei1yndms0WEvyIfm-fAnYP7Dliyw/exec",
 
   // Titel bovenaan de pagina's.
   SEIZOEN: "Duivencompetitie 2025",
