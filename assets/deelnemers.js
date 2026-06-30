@@ -1,4 +1,4 @@
-/* overzicht.js — duiven per team met punten per etappe; naam wijzigen of uit team halen. */
+/* deelnemers.js — duiven per team (deelnemer) met punten per etappe; naam wijzigen of uit team halen. */
 (function () {
   'use strict';
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tussenstand — Duivencompetitie</title>
+  <title>Overzicht duiven — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
   <link rel="stylesheet" href="./assets/styles.css">
 </head>
@@ -13,20 +13,27 @@
       <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
       <div>
         <h1 id="titel">Duivencompetitie</h1>
-        <div class="sub">Openbare tussenstand</div>
+        <div class="sub">Overzicht duiven</div>
       </div>
       <nav class="tabs">
         <a href="./voorbereiden.html">Voorbereiden</a>
         <a href="./keuzemoment.html">Keuzemoment</a>
         <a href="./deelnemers.html">Deelnemers</a>
-        <a href="./duivenlijst.html">Overzicht duiven</a>
+        <a href="./duivenlijst.html" class="active">Overzicht duiven</a>
         <a href="./invoer.html">Uitslag invoeren</a>
-        <a href="./index.html" class="active">Tussenstand</a>
+        <a href="./index.html">Tussenstand</a>
       </nav>
     </header>
 
     <div id="banner"></div>
-    <div id="inhoud"><div class="loading">Tussenstand laden…</div></div>
+
+    <p class="sub" style="margin:0 0 18px">
+      Alle duiven in één lijst. Klik op een <strong>kolomkop</strong> om te
+      sorteren — op naam, team, ringnummer, punten per etappe of totaal. Klik
+      nogmaals voor omgekeerde volgorde.
+    </p>
+
+    <div id="inhoud"><div class="loading">Duivenlijst laden…</div></div>
 
     <footer class="app">Een Goed Stel Duifjes ✦</footer>
   </div>
@@ -34,6 +41,6 @@
   <script src="./config.js"></script>
   <script src="./assets/scoring.js"></script>
   <script src="./assets/api.js"></script>
-  <script src="./assets/tussenstand.js"></script>
+  <script src="./assets/duivenlijst.js"></script>
 </body>
 </html>

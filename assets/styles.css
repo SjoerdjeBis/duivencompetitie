@@ -405,6 +405,21 @@ table.overzicht-tabel thead th {
   border-left: 1px solid var(--line); padding-left: 12px;
 }
 .od-actie, .k-actie { text-align: right; width: 1%; }
+.od-team { text-align: left; color: var(--ink); }
+.od-team.naamloos { color: var(--muted); font-style: italic; }
+
+/* Sorteerbare kolomkoppen (Overzicht duiven) */
+table.duivenlijst-tabel thead th { padding: 0; }
+.sorteer-knop {
+  display: flex; align-items: center; gap: 4px; width: 100%;
+  padding: 9px 8px; background: transparent; border: 0; cursor: pointer;
+  font: inherit; font-size: .72rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em; justify-content: flex-end;
+}
+table.duivenlijst-tabel th.k-naam .sorteer-knop { justify-content: flex-start; }
+.sorteer-knop:hover { color: var(--ink); }
+table.duivenlijst-tabel th.actief .sorteer-knop { color: var(--accent); }
+.sorteer-pijl { font-size: .65rem; line-height: 1; }
 .wijzig-knop {
   padding: 5px 8px; font-size: 1rem; line-height: 1; border-radius: 8px;
   background: transparent; border: 1px solid transparent;
