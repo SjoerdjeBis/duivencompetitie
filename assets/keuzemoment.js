@@ -108,7 +108,7 @@
     $('max-melding').classList.toggle('verborgen', !vol);
     if (vol) {
       $('max-tekst').innerHTML = 'Je hebt het maximum van <strong>' + state.perTeam +
-        '</strong> duiven gekozen. Klik op <strong>Team klaar</strong> om jullie keuze op te slaan.';
+        '</strong> duiven gekozen. Klik op <strong>Sla dit geweldige team op</strong> om jullie keuze vast te leggen.';
     }
     $('paneel-zelf').classList.add('verborgen');
     $('paneel-willekeurig').classList.add('verborgen');
@@ -132,8 +132,8 @@
 
   function voortgangTekst() {
     const n = (state.takenByTeam[huidigTeam()] || []).length;
-    return 'gekozen ' + n + ' / max ' + state.perTeam +
-      ' · nog ' + state.available.length + ' beschikbaar';
+    return 'gekozen ' + n + '/' + state.perTeam +
+      ' - nog ' + state.available.length + ' beschikbaar';
   }
 
   function rendarPicks() {
@@ -534,9 +534,8 @@
 
     banner.className = 'banner' + (live ? ' live' : '');
     banner.innerHTML = live
-      ? 'Kies <strong>maximaal ' + state.perTeam + '</strong> duiven (eerder stoppen mag). ' +
-        'Na elke duif kies je opnieuw: zelf of willekeurig. De lijst werkt realtime bij ' +
-        'terwijl andere teams kiezen.'
+      ? 'Stel hier jouw winnende team van duiven samen. Je mag er <strong>' +
+        state.perTeam + '</strong> kiezen.'
       : 'Demo-modus · oefen vrij; keuzes worden nog niet opgeslagen.';
 
     state.order = [TEAM];
