@@ -88,6 +88,10 @@
   /* ============ Beurt (teampagina) ============ */
   function huidigTeam() { return state.order[state.idx]; }
 
+  function magNogKiezen() {
+    return (state.takenByTeam[huidigTeam()] || []).length < state.perTeam;
+  }
+
   function beginTeam() {
     if (state.idx >= state.order.length) return klaar();
     const team = huidigTeam();
@@ -96,7 +100,14 @@
     $('beurt-positie').textContent = '';
     $('picks-team').textContent = team;
 
-    $('methode-keuze').classList.remove('verborgen');
+    const vol = !magNogKiezen();
+    // Max bereikt -> geen methodekeuze meer, alleen nog opslaan.
+    $('methode-keuze').classList.toggle('verborgen', vol);
+    $('max-melding').classList.toggle('verborgen', !vol);
+    if (vol) {
+      $('max-tekst').innerHTML = 'Je hebt het maximum van <strong>' + state.perTeam +
+        '</strong> duiven gekozen. Klik op <strong>Team klaar</strong> om jullie keuze op te slaan.';
+    }
     $('paneel-zelf').classList.add('verborgen');
     $('paneel-willekeurig').classList.add('verborgen');
     $('methode-vraag').textContent = 'Hoe wil ' + team + ' kiezen?';
@@ -119,7 +130,7 @@
 
   function voortgangTekst() {
     const n = (state.takenByTeam[huidigTeam()] || []).length;
-    return 'gekozen ' + n + ' / richtgetal ' + state.perTeam +
+    return 'gekozen ' + n + ' / max ' + state.perTeam +
       ' · nog ' + state.available.length + ' beschikbaar';
   }
 
@@ -342,7 +353,8 @@
       commitPick(duif, naam);
       $('naam-overlay').classList.add('verborgen');
       state.pendingNaam = null;
-      if (state.methode === 'willekeurig') resetAnimatie();
+      // Na elke keuze terug naar de methodekeuze (of 'max bereikt' als de teller vol is).
+      beginTeam();
     } catch (err) {
       // Duif net door een ander team gepakt? Haal 'm uit de lijst en laat opnieuw kiezen.
       if (/gekozen/i.test(err.message)) {
@@ -365,11 +377,7 @@
     const team = huidigTeam();
     (state.takenByTeam[team] = state.takenByTeam[team] || [])
       .push({ ring_kort: duif.ring_kort, ring_lang: duif.ring_lang, naam: naam });
-    rendarPicks();
-    if (state.methode === 'zelf') rendarZelfGrid();
-    // markeer het ei als "weg" uit de kom (optioneel: laat er eentje verdwijnen)
-    const eersteEi = $('kom-eieren').querySelector('.kom-ei:not(.weg)');
-    if (eersteEi) eersteEi.classList.add('weg');
+    // Renderen + terug naar de methodekeuze gebeurt in beginTeam() (door de aanroeper).
   }
 
   /* ============ Klaar ============ */
@@ -523,8 +531,9 @@
 
     banner.className = 'banner' + (live ? ' live' : '');
     banner.innerHTML = live
-      ? 'Kies <strong>' + state.perTeam + '</strong> duiven (eerder stoppen of er één bij mag). ' +
-        'De lijst werkt realtime bij terwijl andere teams kiezen.'
+      ? 'Kies <strong>maximaal ' + state.perTeam + '</strong> duiven (eerder stoppen mag). ' +
+        'Na elke duif kies je opnieuw: zelf of willekeurig. De lijst werkt realtime bij ' +
+        'terwijl andere teams kiezen.'
       : 'Demo-modus · oefen vrij; keuzes worden nog niet opgeslagen.';
 
     state.order = [TEAM];
