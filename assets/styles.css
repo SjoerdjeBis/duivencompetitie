@@ -466,7 +466,10 @@ button.ghost.gevaar:disabled { color: var(--muted); border-color: var(--line); b
 footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 8px; }
 
 @media (max-width: 620px) {
-  header.app { flex-wrap: wrap; }
+  header.app { flex-wrap: wrap; gap: 12px; }
+  header.app .logo { width: 64px; height: 64px; }
+  header.app h1 { font-size: 1.35rem; }
+  header.app .sub { font-size: .85rem; }
   nav.tabs { margin-left: 0; width: 100%; }
   .tweekolom { grid-template-columns: 1fr; }
   ol.klassement li { grid-template-columns: 34px 1fr auto; }
@@ -476,4 +479,14 @@ footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-
   .actie-rij { flex-direction: column; align-items: stretch; }
   .actie-rij > button { width: 100%; }
   .od-ring { font-size: .76rem; }
+
+  /* Keuze-/beurtkop: teamnaam over de volle breedte, telling op de regel daaronder */
+  .beurt-kop { flex-direction: column; align-items: stretch; gap: 10px; }
+  .beurt-team { font-size: 1.7rem; }
+  .beurt-voortgang { align-self: flex-start; white-space: normal; }
+
+  /* Methodeknoppen onder elkaar zodat ze niet samengeknepen worden */
+  .methode-knoppen { grid-template-columns: 1fr; }
+  button.methode { padding: 16px; }
+  button.methode .ikoon { font-size: 2rem; }
 }
