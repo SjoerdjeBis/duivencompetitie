@@ -6,6 +6,13 @@
   <title>Keuzemoment — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
   <link rel="stylesheet" href="./assets/styles.css">
+  <!-- Bij een teamlink (?team=...) meteen de beheerders-hub + menu verbergen,
+       nog vóórdat er iets getekend wordt, zodat een team die pagina nooit ziet. -->
+  <script>
+    if (new URLSearchParams(location.search).get('team')) {
+      document.documentElement.classList.add('team-laadt');
+    }
+  </script>
 </head>
 <body>
   <div class="wrap">
@@ -26,6 +33,11 @@
     </header>
 
     <div id="banner"></div>
+
+    <!-- Laadkaart: alleen zichtbaar terwijl een teampagina (?team=...) laadt. -->
+    <div id="team-laad-melding" class="card" style="text-align:center">
+      <div class="loading">Je keuzepagina wordt geladen…</div>
+    </div>
 
     <!-- ============ 1. OPZET (beheerder: hub met teamlinks) ============ -->
     <section id="scherm-opzet" class="scherm">

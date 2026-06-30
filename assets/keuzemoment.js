@@ -51,6 +51,8 @@
 
   /* ============ Schermwissels ============ */
   function toon(schermId) {
+    // De laad-afscherming van een teampagina opheffen: het echte scherm is klaar.
+    document.documentElement.classList.remove('team-laadt');
     ['scherm-opzet', 'scherm-beurt', 'scherm-klaar'].forEach(id =>
       $(id).classList.toggle('verborgen', id !== schermId));
   }
@@ -479,6 +481,7 @@
       if (TEAMMODE) { TEAM = resolveTeam(model); return initTeam(model, live, banner); }
       return initBeheer(model, live, banner);
     } catch (err) {
+      document.documentElement.classList.remove('team-laadt');
       banner.className = 'banner';
       banner.textContent = 'Kon de gegevens niet laden: ' + err.message;
     }

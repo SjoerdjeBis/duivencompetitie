@@ -227,6 +227,14 @@ ol.opzet-volgorde.team-links li:hover { border-color: var(--accent); background:
 .kopieer-link:hover { border-color: var(--accent); background: var(--accent-soft); }
 .kopieer-link.ok { color: #285c48; background: var(--accent-soft); border-color: #cfe6da; }
 
+/* Teampagina aan het laden: hub + menu nooit tonen, alleen de laadkaart. */
+#team-laad-melding { display: none; }
+html.team-laadt nav.tabs,
+html.team-laadt #scherm-opzet,
+html.team-laadt #scherm-beurt,
+html.team-laadt #scherm-klaar { display: none !important; }
+html.team-laadt #team-laad-melding { display: block; }
+
 /* --- Beurt-kop --- */
 .beurt-kop { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .beurt-label { color: var(--muted); font-size: .82rem; }
