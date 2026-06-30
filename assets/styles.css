@@ -215,6 +215,18 @@ ol.opzet-volgorde .volg-naam { font-weight: 600; }
 }
 .volg-knoppen button:hover { color: var(--accent); border-color: var(--accent); }
 
+/* Beheerder-hub: teams als klikbare links naar hun keuzepagina */
+ol.opzet-volgorde.team-links li { transition: border-color .12s, background .12s; }
+ol.opzet-volgorde.team-links li:hover { border-color: var(--accent); background: var(--accent-soft); }
+.volg-naam.team-link { font-weight: 700; color: var(--ink); text-decoration: none; }
+.volg-naam.team-link:hover { color: var(--accent); }
+.kopieer-link {
+  padding: 6px 12px; font-size: .82rem; border-radius: 8px; white-space: nowrap;
+  background: transparent; color: var(--accent); border: 1px solid var(--line);
+}
+.kopieer-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+.kopieer-link.ok { color: #285c48; background: var(--accent-soft); border-color: #cfe6da; }
+
 /* --- Beurt-kop --- */
 .beurt-kop { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .beurt-label { color: var(--muted); font-size: .82rem; }
@@ -363,6 +375,79 @@ ul.team-picks .leeg-regel { color: var(--muted); justify-content: center; backgr
 .modal input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
 .modal input.leeg-fout { border-color: var(--danger); background: #fdf0ee; }
 
+/* ====================================================================== */
+/* ====================  Overzicht per team  ============================ */
+/* ====================================================================== */
+.card h2 .team-totaal {
+  margin-left: auto; font-weight: 800; color: var(--accent);
+  font-variant-numeric: tabular-nums; font-size: .95rem;
+}
+.tabel-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
+table.overzicht-tabel { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.overzicht-tabel th, table.overzicht-tabel td {
+  padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap;
+}
+table.overzicht-tabel tbody tr:last-child td { border-bottom: 0; }
+table.overzicht-tabel thead th {
+  font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .04em; border-bottom: 2px solid var(--line); text-align: right;
+}
+/* tekstkolommen links, getalkolommen rechts */
+.k-naam, .k-ring { text-align: left; }
+.od-naam { font-weight: 600; text-align: left; }
+.od-naam.naamloos { color: var(--muted); font-style: italic; font-weight: 500; }
+.od-ring { color: var(--muted); font-size: .85rem; text-align: left; }
+.od-etappe, .k-etappe { text-align: right; width: 34px; }
+.od-etappe { color: var(--ink); }
+.od-etappe.nul { color: var(--line); }
+.od-totaal, .k-totaal {
+  text-align: right; font-weight: 800; color: var(--accent);
+  border-left: 1px solid var(--line); padding-left: 12px;
+}
+.od-actie, .k-actie { text-align: right; width: 1%; }
+.wijzig-knop {
+  padding: 5px 8px; font-size: 1rem; line-height: 1; border-radius: 8px;
+  background: transparent; border: 1px solid transparent;
+}
+.wijzig-knop:hover { border-color: var(--line); background: var(--accent-soft); }
+
+/* Zwevend actie-menu achter de Wijzig-knop */
+.actie-menu {
+  position: absolute; z-index: 60; min-width: 180px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18); padding: 6px; display: grid; gap: 2px;
+}
+.actie-menu button {
+  text-align: left; width: 100%; background: transparent; color: var(--ink);
+  border: 0; border-radius: 8px; padding: 10px 12px; font-size: .9rem; font-weight: 600;
+}
+.actie-menu button:hover { background: var(--accent-soft); }
+.actie-menu button.gevaar { color: var(--danger); }
+.actie-menu button.gevaar:hover { background: #fdf0ee; }
+
+/* Opslaan & beheer: actie-rijen met uitleg links, knop rechts */
+.actie-rij {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 18px;
+  padding: 16px 0; border-top: 1px solid var(--line);
+}
+.actie-rij:first-of-type { border-top: 0; padding-top: 4px; }
+.actie-tekst { flex: 1; }
+.actie-tekst strong { display: block; margin-bottom: 3px; }
+.actie-tekst .sub { margin: 2px 0 0; }
+.actie-tekst .wis-optie { margin: 12px 0 0; }
+.actie-tekst .tip { margin-top: 8px; color: var(--muted); }
+.actie-rij > button { flex: none; align-self: center; white-space: nowrap; min-width: 150px; }
+.demo-kopie { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); }
+
+/* Reset-blok op Voorbereiden */
+.reset-blok {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line);
+}
+button.ghost.gevaar { color: var(--danger); border-color: #f1c9c0; white-space: nowrap; }
+button.ghost.gevaar:hover { background: #fdf0ee; }
+button.ghost.gevaar:disabled { color: var(--muted); border-color: var(--line); background: transparent; cursor: not-allowed; }
+
 footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 8px; }
 
 @media (max-width: 620px) {
@@ -371,4 +456,9 @@ footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-
   .tweekolom { grid-template-columns: 1fr; }
   ol.klassement li { grid-template-columns: 34px 1fr auto; }
   ol.klassement li .delta { display: none; }
+  .reset-blok { flex-direction: column; align-items: stretch; }
+  .reset-blok button { width: 100%; }
+  .actie-rij { flex-direction: column; align-items: stretch; }
+  .actie-rij > button { width: 100%; }
+  .od-ring { font-size: .76rem; }
 }

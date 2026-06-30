@@ -83,7 +83,10 @@
     const vluchten = Object.keys(vluchtenMap).map(Number).sort((a, b) => a - b)
       .map(nr => ({ nummer: nr, finishers: vluchtenMap[nr].sort((a, b) => a.positie - b.positie) }));
 
-    return { duiven, byKort, byNaam, punten, roster, deelnemers, vluchten };
+    // Beheer-instellingen (bv. duivenPerTeam). Komen mee uit de API; in demo leeg.
+    const instellingen = raw.instellingen || {};
+
+    return { duiven, byKort, byNaam, punten, roster, deelnemers, vluchten, instellingen };
   }
 
   /** Zoekt de duif bij een finisher-regel.
@@ -167,6 +170,45 @@
     }
   }
 
+  /**
+   * Punten per duif (op ringnummer), inclusief duiven die nog 0 scoorden.
+   * @returns {Array<{naam, ring_lang, ring_kort, teams, punten}>} in de volgorde van model.duiven.
+   */
+  function duivenMetPunten(model) {
+    const pts = {}; // sleutel (ring_lang of naam) -> totaal punten
+    model.vluchten.forEach(v => v.finishers.forEach(f => {
+      const duif = resolveDuif(model, f);
+      if (duif.onbekend) return;            // reserve-/onbekende duif: telt voor niemand
+      const key = duif.ring_lang || duif.naam;
+      pts[key] = (pts[key] || 0) + (model.punten[f.positie] || 0);
+    }));
+    return model.duiven.map(d => Object.assign({}, d, {
+      punten: pts[d.ring_lang || d.naam] || 0
+    }));
+  }
+
+  /**
+   * Punten per duif uitgesplitst per vlucht (etappe), inclusief het totaal.
+   * @returns {{vluchten:number[], duiven:Array<{naam,ring_lang,ring_kort,teams,perVlucht:Object,totaal:number}>}}
+   */
+  function duivenPerVlucht(model) {
+    const perDuif = {}; // sleutel (ring_lang of naam) -> { vluchtnr: punten }
+    model.vluchten.forEach(v => v.finishers.forEach(f => {
+      const duif = resolveDuif(model, f);
+      if (duif.onbekend) return;
+      const key = duif.ring_lang || duif.naam;
+      const map = perDuif[key] || (perDuif[key] = {});
+      map[v.nummer] = (map[v.nummer] || 0) + (model.punten[f.positie] || 0);
+    }));
+    const vluchten = model.vluchten.map(v => v.nummer);
+    const duiven = model.duiven.map(d => {
+      const pv = perDuif[d.ring_lang || d.naam] || {};
+      const totaal = vluchten.reduce((s, nr) => s + (pv[nr] || 0), 0);
+      return Object.assign({}, d, { perVlucht: pv, totaal: totaal });
+    });
+    return { vluchten: vluchten, duiven: duiven };
+  }
+
   /** Geeft een map deelnemer->rang op basis van een scorefunctie (hoog = beter). */
   function rankOf(scoreFn, roster) {
     const arr = [...roster].map(d => ({ d, s: scoreFn(d) }))
@@ -176,5 +218,5 @@
     return out;
   }
 
-  global.Scoring = { parseCSV, splitTeams, buildModel, computeStandings, resolveDuif };
+  global.Scoring = { parseCSV, splitTeams, buildModel, computeStandings, resolveDuif, duivenMetPunten, duivenPerVlucht };
 })(typeof window !== 'undefined' ? window : globalThis);

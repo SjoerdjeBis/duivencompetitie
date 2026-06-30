@@ -180,6 +180,44 @@
     naarKlembord(namen.join('\n'), namen.length + ' deelnemers');
   }
 
+  function instellingMelding(soort, tekst) {
+    const m = $('instelling-melding');
+    m.className = 'melding ' + soort;
+    m.innerHTML = tekst;
+  }
+
+  async function instellingOpslaan() {
+    const n = Math.max(1, Number($('duiven-per-team').value) || 0);
+    if (!n) { instellingMelding('fout', 'Vul een geldig aantal in.'); return; }
+    const knop = $('instelling-opslaan');
+    knop.disabled = true; const oud = knop.textContent; knop.textContent = 'Opslaan…';
+    try {
+      await API.setInstellingen({ duivenPerTeam: n });
+      instellingMelding('ok', '✓ Opgeslagen: ' + n + ' duiven per team.');
+    } catch (err) {
+      instellingMelding('fout', 'Opslaan mislukt: ' + err.message);
+    } finally {
+      knop.disabled = false; knop.textContent = oud;
+    }
+  }
+
+  async function resetDuiven() {
+    if (!window.confirm('Alle duiven teamloos maken?\n\n' +
+        'Dit wist bij élke duif de naam én het team in de Google Sheet. ' +
+        'De ringnummers en de uitslagen blijven staan.\n\nDoorgaan?')) return;
+    const knop = $('reset-duiven');
+    knop.disabled = true; const oud = knop.textContent; knop.textContent = 'Resetten…';
+    try {
+      const res = await API.resetDuiven();
+      melding('ok', '✓ ' + res.duiven + ' duiven zijn teamloos gemaakt. ' +
+        'Je kunt nu het keuzemoment opnieuw doen.');
+    } catch (err) {
+      melding('fout', 'Resetten mislukt: ' + err.message);
+    } finally {
+      knop.disabled = false; knop.textContent = oud;
+    }
+  }
+
   function kopieerDuiven() {
     const duiven = leesDuiven();
     if (!duiven.length) return melding('fout', 'Er zijn nog geen duiven ingevoerd.');
@@ -204,6 +242,10 @@
       if (!vorig.length) lijst.append(maakDeelnemerRij('', true));
       telDeelnemers();
 
+      // Keuzemoment-instelling voorvullen (Sheet > config-default).
+      const inst = model.instellingen || {};
+      $('duiven-per-team').value = Number(inst.duivenPerTeam) || Number(cfg.DUIVEN_PER_TEAM) || 8;
+
       banner.className = 'banner' + (live ? ' live' : '');
       if (live) {
         banner.textContent = 'Live · opslaan schrijft direct naar de Google Sheet.';
@@ -212,7 +254,9 @@
           '(stel API_URL in <code>config.js</code> in). Je kunt wel alvast invullen en ' +
           'de lijsten kopiëren naar je Sheet.';
         $('opslaan').disabled = true;
-        $('kopieer-uitleg').style.display = '';
+        $('reset-duiven').disabled = true;
+        $('instelling-opslaan').disabled = true;
+        $('demo-kopie').style.display = '';   // kopieerknoppen alleen in demo
       }
 
       $('deelnemer-toevoegen').addEventListener('click', () => {
@@ -225,6 +269,8 @@
       $('opslaan').addEventListener('click', opslaan);
       $('kopieer-deelnemers').addEventListener('click', kopieerDeelnemers);
       $('kopieer-duiven').addEventListener('click', kopieerDuiven);
+      $('reset-duiven').addEventListener('click', resetDuiven);
+      $('instelling-opslaan').addEventListener('click', instellingOpslaan);
     } catch (err) {
       banner.className = 'banner';
       melding('fout', 'Kon de gegevens niet laden: ' + err.message);

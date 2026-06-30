@@ -16,36 +16,30 @@
         <div class="sub">Keuzemoment</div>
       </div>
       <nav class="tabs">
-        <a href="./index.html">Tussenstand</a>
-        <a href="./invoer.html">Uitslag invoeren</a>
         <a href="./voorbereiden.html">Voorbereiden</a>
         <a href="./keuzemoment.html" class="active">Keuzemoment</a>
+        <a href="./overzicht.html">Overzicht</a>
+        <a href="./invoer.html">Uitslag invoeren</a>
+        <a href="./index.html">Tussenstand</a>
       </nav>
     </header>
 
     <div id="banner"></div>
 
-    <!-- ============ 1. OPZET ============ -->
+    <!-- ============ 1. OPZET (beheerder: hub met teamlinks) ============ -->
     <section id="scherm-opzet" class="scherm">
       <div class="card">
-        <h2>Draft-volgorde <span class="count" id="opzet-telling"></span></h2>
+        <h2>Keuzepagina's per team <span class="count" id="opzet-telling"></span></h2>
         <p class="sub" style="margin:-6px 0 14px">
-          De teams kiezen in <strong>omgekeerde volgorde van de eindstand van vorig jaar</strong>
-          (de onderste eerst). Klopt de volgorde? Sleep met ▲▼ om te schuiven.
-          Elk team kiest in één beurt al zijn duiven.
+          Het keuzemoment is dit jaar <strong>decentraal</strong>: elk team heeft een
+          eigen link. Stuur elke link naar het betreffende team — daar kiezen ze zelf
+          uit de lijst óf willekeurig, en slaan ze hun duiven op. De beschikbare duiven
+          worden <strong>realtime</strong> bijgewerkt, dus je kunt iedereen tegelijk
+          laten kiezen zonder dat een duif dubbel gaat. Klik een team aan om bij die
+          pagina te komen.
         </p>
-        <ol id="opzet-volgorde" class="opzet-volgorde"></ol>
-
-        <div class="veld" style="margin-top:18px">
-          <label for="per-team">Richtgetal duiven per team</label>
-          <input id="per-team" type="number" min="1" max="50" style="width:90px">
-          <span class="sub">— je kunt per team alsnog eerder stoppen of er één bij doen.</span>
-        </div>
-
+        <ol id="opzet-volgorde" class="opzet-volgorde team-links"></ol>
         <div id="opzet-melding"></div>
-        <div class="knoppen">
-          <button id="start-draft" class="primary" type="button">Start het keuzemoment →</button>
-        </div>
       </div>
     </section>
 
@@ -127,7 +121,7 @@
         <h2>🎉 Het keuzemoment is klaar!</h2>
         <p class="sub" id="klaar-samenvatting"></p>
         <div id="klaar-overzicht" class="klaar-overzicht"></div>
-        <div class="knoppen">
+        <div class="knoppen" id="klaar-knoppen">
           <a class="knop-link" href="./index.html">Naar de tussenstand</a>
           <button id="kopieer-keuze" class="ghost" type="button">Kopieer alle keuzes</button>
         </div>

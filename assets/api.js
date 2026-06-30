@@ -83,5 +83,28 @@
     return postJSON(Object.assign({ action: 'kiesDuif' }, payload));
   }
 
-  global.API = { loadModel, submitUitslag, saveSeizoen, kiesDuif, isLive };
+  /** Hernoemt één duif (op ring_lang). @param {{ring_lang:string, naam:string}} payload */
+  function hernoemDuif(payload) {
+    return postJSON(Object.assign({ action: 'hernoemDuif' }, payload));
+  }
+
+  /** Haalt één duif uit één team weg (op ring_lang). @param {{ring_lang:string, team:string}} payload */
+  function verwijderUitTeam(payload) {
+    return postJSON(Object.assign({ action: 'verwijderUitTeam' }, payload));
+  }
+
+  /** Maakt alle duiven teamloos (en wist hun naam): klaar voor een nieuw keuzemoment. */
+  function resetDuiven() {
+    return postJSON({ action: 'resetDuiven' });
+  }
+
+  /** Slaat beheer-instellingen op (bv. { duivenPerTeam: 8 }). */
+  function setInstellingen(payload) {
+    return postJSON(Object.assign({ action: 'setInstellingen' }, payload));
+  }
+
+  global.API = {
+    loadModel, submitUitslag, saveSeizoen, kiesDuif,
+    hernoemDuif, verwijderUitTeam, resetDuiven, setInstellingen, isLive
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

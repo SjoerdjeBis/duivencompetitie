@@ -16,10 +16,11 @@
         <div class="sub">Seizoen voorbereiden</div>
       </div>
       <nav class="tabs">
-        <a href="./index.html">Tussenstand</a>
-        <a href="./invoer.html">Uitslag invoeren</a>
         <a href="./voorbereiden.html" class="active">Voorbereiden</a>
         <a href="./keuzemoment.html">Keuzemoment</a>
+        <a href="./overzicht.html">Overzicht</a>
+        <a href="./invoer.html">Uitslag invoeren</a>
+        <a href="./index.html">Tussenstand</a>
       </nav>
     </header>
 
@@ -58,23 +59,74 @@
       <div id="duiven-waarschuwing"></div>
     </div>
 
-    <!-- ===== Opslaan ===== -->
+    <!-- ===== Keuzemoment-instelling ===== -->
     <div class="card">
-      <label class="wis-optie">
-        <input type="checkbox" id="wis-uitslagen">
-        Ook de uitslagen van vorig seizoen wissen (echt nieuw seizoen, begint op 0)
-      </label>
-      <div id="melding"></div>
-      <div class="knoppen">
-        <button id="opslaan" class="primary" type="button">Seizoen opslaan</button>
-        <button id="kopieer-deelnemers" class="ghost" type="button">Kopieer deelnemers</button>
-        <button id="kopieer-duiven" class="ghost" type="button">Kopieer duiven</button>
-      </div>
-      <p class="sub" id="kopieer-uitleg" style="margin:10px 0 0; display:none">
-        In demo-modus kun je nog niet rechtstreeks opslaan. Gebruik de kopieerknoppen
-        en plak de regels in de tabbladen <code>Deelnemers</code> en
-        <code>Duivendatabase</code> van je Sheet.
+      <h2>Keuzemoment</h2>
+      <p class="sub" style="margin:-6px 0 12px">
+        Hoeveel duiven kiest elk team? Dit richtgetal zie je terug op de
+        keuzepagina van elk team (ze kunnen er tijdens het kiezen alsnog eentje
+        minder of meer nemen).
       </p>
+      <div class="reset-blok" style="border-top:0; padding-top:0; margin-top:0">
+        <div class="veld" style="margin:0">
+          <label for="duiven-per-team">Aantal duiven per team</label>
+          <input id="duiven-per-team" type="number" min="1" max="50" style="width:90px">
+        </div>
+        <button id="instelling-opslaan" class="primary" type="button">Aantal opslaan</button>
+      </div>
+      <div id="instelling-melding"></div>
+    </div>
+
+    <!-- ===== Opslaan & beheer ===== -->
+    <div class="card">
+      <h2>Opslaan &amp; beheer</h2>
+      <div id="melding"></div>
+
+      <!-- Actie 1: nieuw seizoen opslaan -->
+      <div class="actie-rij">
+        <div class="actie-tekst">
+          <strong>Seizoen opslaan</strong>
+          <p class="sub">
+            Start een nieuw seizoen: <strong>vervangt</strong> de deelnemers en duiven
+            door de lijsten hierboven. De oude duiven verdwijnen; de nieuwe beginnen
+            zonder team en naam — die komen op het keuzemoment.
+          </p>
+          <label class="wis-optie">
+            <input type="checkbox" id="wis-uitslagen">
+            Ook de uitslagen van vorig seizoen wissen — zet de tussenstand terug op 0.
+          </label>
+          <p class="sub tip">
+            💡 Maak vooraf via <em>Bestand → Een kopie maken</em> een kopie van de
+            Google Sheet, als archief van vorig seizoen.
+          </p>
+        </div>
+        <button id="opslaan" class="primary" type="button">Seizoen opslaan</button>
+      </div>
+
+      <!-- Actie 2: duiven resetten -->
+      <div class="actie-rij">
+        <div class="actie-tekst">
+          <strong>Duiven van dit seizoen resetten</strong>
+          <p class="sub">
+            Maakt alle duiven weer <strong>teamloos en naamloos</strong> (zelfde
+            ringnummers), zodat je het keuzemoment opnieuw kunt doen. Deelnemers en
+            uitslagen blijven staan.
+          </p>
+        </div>
+        <button id="reset-duiven" class="ghost gevaar" type="button">Duiven resetten</button>
+      </div>
+
+      <!-- Alleen in demo-modus: handmatig kopiëren naar de Sheet -->
+      <div id="demo-kopie" class="demo-kopie" style="display:none">
+        <p class="sub" style="margin:0 0 10px">
+          Demo-modus · rechtstreeks opslaan kan niet. Kopieer de lijsten en plak ze in
+          de tabbladen <code>Deelnemers</code> en <code>Duivendatabase</code>:
+        </p>
+        <div class="knoppen" style="margin-top:0">
+          <button id="kopieer-deelnemers" class="ghost" type="button">Kopieer deelnemers</button>
+          <button id="kopieer-duiven" class="ghost" type="button">Kopieer duiven</button>
+        </div>
+      </div>
     </div>
 
     <footer class="app">Een Goed Stel Duifjes ✦</footer>

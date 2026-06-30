@@ -1,4 +1,8 @@
-/* keuzemoment.js — de draft: teams kiezen om beurten duiven (zelf of willekeurig). */
+/* keuzemoment.js — decentraal keuzemoment.
+ *   - Beheerder (geen ?team)  : hub met een eigen keuzelink per team.
+ *   - Teampagina (?team=Naam) : dat team kiest zelf of willekeurig en slaat op;
+ *                               menu verborgen, beschikbare duiven realtime.
+ */
 (function () {
   'use strict';
 
@@ -10,9 +14,32 @@
   const anim = (el, frames, opts) =>
     el.animate(frames, Object.assign({ duration: 600, fill: 'forwards', easing: 'ease' }, opts)).finished;
 
+  const TEAMPARAM = new URLSearchParams(location.search).get('team');
+  const TEAMMODE = !!(TEAMPARAM && TEAMPARAM.trim());
+  let TEAM = null; // de echte teamnaam (pas bekend na het laden van het model)
+
+  /** Maakt een nette, URL-veilige slug van een teamnaam: "Marco & Kelsey" -> "marco-kelsey". */
+  function slugify(s) {
+    return String(s).toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // accenten weg
+      .replace(/&/g, ' ')                               // & negeren
+      .replace(/[^a-z0-9]+/g, '-')                      // rest -> koppelteken
+      .replace(/^-+|-+$/g, '');                         // randstreepjes weg
+  }
+
+  /** Zoekt bij de URL-parameter de echte teamnaam uit de deelnemerslijst.
+   *  Match eerst exact (oude volledige-naam-links), anders op slug. null = niet/dubbelzinnig. */
+  function resolveTeam(model) {
+    const lijst = (model.deelnemers && model.deelnemers.length) ? model.deelnemers : [...model.roster];
+    const raw = TEAMPARAM.trim();
+    let m = lijst.filter(t => t === raw);
+    if (m.length !== 1) m = lijst.filter(t => slugify(t) === slugify(raw));
+    return m.length === 1 ? m[0] : null;
+  }
+
   let LIVE = false;
   const state = {
-    order: [],          // teamnamen in draft-volgorde (slechtste eerst)
+    order: [],          // teamnamen (teampagina: precies één)
     perTeam: 8,         // richtgetal
     available: [],      // [{ring_lang, ring_kort}]
     takenByTeam: {},    // team -> [{ring_kort, ring_lang, naam}]
@@ -28,28 +55,37 @@
       $(id).classList.toggle('verborgen', id !== schermId));
   }
 
-  /* ============ 1. Opzet ============ */
-  function maakOpzetRij(naam) {
+  /* ============ Beheerder-hub: teamlinks ============ */
+  function maakTeamLink(naam, i) {
     const li = document.createElement('li');
-    li.dataset.team = naam;
-    const grijp = document.createElement('span'); grijp.className = 'volg-nr';
-    const label = document.createElement('span'); label.className = 'volg-naam'; label.textContent = naam;
-    const knoppen = document.createElement('span'); knoppen.className = 'volg-knoppen';
-    const op = document.createElement('button'); op.type = 'button'; op.textContent = '▲'; op.title = 'omhoog';
-    const neer = document.createElement('button'); neer.type = 'button'; neer.textContent = '▼'; neer.title = 'omlaag';
-    op.addEventListener('click', () => { const p = li.previousElementSibling; if (p) li.parentNode.insertBefore(li, p); nummerOpzet(); });
-    neer.addEventListener('click', () => { const n = li.nextElementSibling; if (n) li.parentNode.insertBefore(n, li); nummerOpzet(); });
-    knoppen.append(op, neer);
-    li.append(grijp, label, knoppen);
+    const nr = document.createElement('span'); nr.className = 'volg-nr'; nr.textContent = (i + 1);
+    const a = document.createElement('a');
+    a.className = 'volg-naam team-link';
+    a.href = './keuzemoment.html?team=' + slugify(naam);
+    a.target = '_blank'; a.rel = 'noopener';
+    a.title = 'Open de keuzepagina van ' + naam + ' (nieuw tabblad)';
+    a.textContent = naam;
+
+    const kopieer = document.createElement('button');
+    kopieer.type = 'button'; kopieer.className = 'kopieer-link';
+    kopieer.textContent = '🔗 Kopieer link';
+    kopieer.addEventListener('click', async e => {
+      e.preventDefault(); e.stopPropagation();
+      try {
+        await navigator.clipboard.writeText(a.href); // a.href is de absolute URL
+        const oud = kopieer.textContent;
+        kopieer.textContent = 'Gekopieerd ✓'; kopieer.classList.add('ok');
+        setTimeout(() => { kopieer.textContent = oud; kopieer.classList.remove('ok'); }, 1500);
+      } catch (err) {
+        alert('Kopiëren lukte niet: ' + err.message);
+      }
+    });
+
+    li.append(nr, a, kopieer);
     return li;
   }
-  function nummerOpzet() {
-    const rijen = [...$('opzet-volgorde').children];
-    rijen.forEach((li, i) => { li.querySelector('.volg-nr').textContent = (i + 1); });
-    $('opzet-telling').textContent = rijen.length + ' teams';
-  }
 
-  /* ============ 2. Beurt ============ */
+  /* ============ Beurt (teampagina) ============ */
   function huidigTeam() { return state.order[state.idx]; }
 
   function beginTeam() {
@@ -57,7 +93,7 @@
     const team = huidigTeam();
     state.methode = null;
     $('beurt-team').textContent = team;
-    $('beurt-positie').textContent = '(' + (state.idx + 1) + ' / ' + state.order.length + ')';
+    $('beurt-positie').textContent = '';
     $('picks-team').textContent = team;
 
     $('methode-keuze').classList.remove('verborgen');
@@ -83,7 +119,8 @@
 
   function voortgangTekst() {
     const n = (state.takenByTeam[huidigTeam()] || []).length;
-    return 'gekozen ' + n + ' / richtgetal ' + state.perTeam;
+    return 'gekozen ' + n + ' / richtgetal ' + state.perTeam +
+      ' · nog ' + state.available.length + ' beschikbaar';
   }
 
   function rendarPicks() {
@@ -115,9 +152,7 @@
       knop.type = 'button'; knop.className = 'nummer-knop';
       knop.innerHTML = '<span class="nk">' + d.ring_kort + '</span>' +
         '<span class="nl">' + d.ring_lang + '</span>';
-      knop.addEventListener('click', () => vraagNaam(d, () => {
-        // grid bijwerken gebeurt in commitPick -> rendarZelfGrid
-      }));
+      knop.addEventListener('click', () => vraagNaam(d, () => {}));
       grid.append(knop);
     });
     if (!state.available.length) {
@@ -287,6 +322,12 @@
     if (state.methode === 'willekeurig') resetAnimatie();
   }
 
+  /** Haal een duif uit de beschikbare lijst (na een geslaagde of botsende claim). */
+  function haalUitBeschikbaar(duif) {
+    state.available = state.available.filter(d =>
+      d.ring_lang !== duif.ring_lang || d.ring_kort !== duif.ring_kort);
+  }
+
   async function bevestigNaam() {
     if (!state.pendingNaam) return;
     const naam = $('duif-naam').value.trim();
@@ -297,20 +338,30 @@
 
     const knop = $('naam-ok'); knop.disabled = true; const oud = knop.textContent; knop.textContent = 'Opslaan…';
     try {
-      if (LIVE) await API.kiesDuif({ ring_lang: duif.ring_lang, ring_kort: duif.ring_kort, naam: naam, team: team });
+      if (LIVE) await API.kiesDuif({ ring_lang: duif.ring_lang, ring_kort: duif.ring_kort, naam: naam, team: team, exclusief: TEAMMODE });
       commitPick(duif, naam);
       $('naam-overlay').classList.add('verborgen');
       state.pendingNaam = null;
       if (state.methode === 'willekeurig') resetAnimatie();
     } catch (err) {
-      alert('Opslaan mislukt: ' + err.message);
+      // Duif net door een ander team gepakt? Haal 'm uit de lijst en laat opnieuw kiezen.
+      if (/gekozen/i.test(err.message)) {
+        haalUitBeschikbaar(duif);
+        $('naam-overlay').classList.add('verborgen');
+        state.pendingNaam = null;
+        if (state.methode === 'zelf') rendarZelfGrid();
+        if (state.methode === 'willekeurig') resetAnimatie();
+        alert('Helaas — ' + (duif.ring_kort) + ' is net door een ander team gekozen. Kies een andere duif.');
+      } else {
+        alert('Opslaan mislukt: ' + err.message);
+      }
     } finally {
       knop.disabled = false; knop.textContent = oud;
     }
   }
 
   function commitPick(duif, naam) {
-    state.available = state.available.filter(d => d.ring_lang !== duif.ring_lang || d.ring_kort !== duif.ring_kort);
+    haalUitBeschikbaar(duif);
     const team = huidigTeam();
     (state.takenByTeam[team] = state.takenByTeam[team] || [])
       .push({ ring_kort: duif.ring_kort, ring_lang: duif.ring_lang, naam: naam });
@@ -321,13 +372,19 @@
     if (eersteEi) eersteEi.classList.add('weg');
   }
 
-  /* ============ 3. Klaar ============ */
+  /* ============ Klaar ============ */
   function klaar() {
     toon('scherm-klaar');
     const teams = state.order;
     const totaal = teams.reduce((s, t) => s + (state.takenByTeam[t] || []).length, 0);
-    $('klaar-samenvatting').textContent = totaal + (totaal === 1 ? ' duif' : ' duiven') +
-      ' verdeeld over ' + teams.length + ' teams.';
+    if (TEAMMODE) {
+      $('klaar-samenvatting').textContent = 'Jullie keuzes zijn opgeslagen — ' +
+        totaal + (totaal === 1 ? ' duif' : ' duiven') + ' voor ' + teams[0] + '. Bedankt!';
+      $('klaar-knoppen').classList.add('verborgen');
+    } else {
+      $('klaar-samenvatting').textContent = totaal + (totaal === 1 ? ' duif' : ' duiven') +
+        ' verdeeld over ' + teams.length + ' teams.';
+    }
     const box = $('klaar-overzicht');
     box.innerHTML = '';
     teams.forEach(t => {
@@ -354,10 +411,48 @@
       .catch(e => alert('Kopiëren lukte niet: ' + e.message));
   }
 
+  /* ============ Realtime beschikbaarheid (teampagina) ============ */
+  function startRealtime() {
+    if (!LIVE || !TEAMMODE) return;
+    setInterval(async () => {
+      if (document.hidden || state.bezig || state.pendingNaam) return;
+      try {
+        const { model } = await API.loadModel();
+        const avail = [];
+        model.duiven.forEach(d => {
+          if (d.teams && d.teams.length) return;   // al bezet
+          avail.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
+        });
+        state.available = avail;
+        $('zelf-telling').textContent = '(' + avail.length + ')';
+        $('beurt-voortgang').textContent = voortgangTekst();
+        if (state.methode === 'zelf' && !$('paneel-zelf').classList.contains('verborgen')) {
+          rendarZelfGrid();
+        }
+      } catch (e) { /* stil: volgende tick probeert opnieuw */ }
+    }, 5000);
+  }
+
   /* ============ Hulp ============ */
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function vulVoorraad(model) {
+    if (LIVE) {
+      model.duiven.forEach(d => {
+        if (d.teams && d.teams.length) {
+          d.teams.forEach(t => (state.takenByTeam[t] = state.takenByTeam[t] || [])
+            .push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang, naam: d.naam }));
+        } else {
+          state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
+        }
+      });
+    } else {
+      // Demo: alles beschikbaar zodat je kunt oefenen.
+      model.duiven.forEach(d => state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang }));
+    }
   }
 
   /* ============ Init ============ */
@@ -366,69 +461,84 @@
     try {
       const { model, live } = await API.loadModel();
       LIVE = live;
-      state.perTeam = Number(cfg.DUIVEN_PER_TEAM) || 8;
-      $('per-team').value = state.perTeam;
+      state.perTeam = Number((model.instellingen || {}).duivenPerTeam) || Number(cfg.DUIVEN_PER_TEAM) || 8;
+      vulVoorraad(model);
 
-      // Beschikbare duiven + reeds gekozen (resume).
-      if (live) {
-        model.duiven.forEach(d => {
-          if (d.teams && d.teams.length) {
-            d.teams.forEach(t => (state.takenByTeam[t] = state.takenByTeam[t] || [])
-              .push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang, naam: d.naam }));
-          } else {
-            state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
-          }
-        });
-      } else {
-        // Demo: alles is "beschikbaar" zodat je de hele draft kunt oefenen.
-        model.duiven.forEach(d => state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang }));
-      }
-
-      // Draft-volgorde = omgekeerde eindstand van vorig jaar.
-      const klassement = Scoring.computeStandings(model).klassement; // beste -> slechtste
-      let order = klassement.map(r => r.deelnemer).reverse();         // slechtste -> beste
-      if (!order.length) order = [...model.roster];
-      state.order = order;
-
-      const lijst = $('opzet-volgorde');
-      order.forEach(t => lijst.append(maakOpzetRij(t)));
-      nummerOpzet();
-
-      banner.className = 'banner' + (live ? ' live' : '');
-      banner.innerHTML = live
-        ? 'Live · elke keuze wordt direct in de Google Sheet vastgelegd.'
-        : 'Demo-modus · <strong>oefen de hele draft</strong> met alle duiven; keuzes worden ' +
-          'nog niet opgeslagen (gebruik straks de kopieerknop). Stel API_URL in <code>config.js</code> in om echt op te slaan.';
-
-      // Events
-      $('start-draft').addEventListener('click', startDraft);
-      document.querySelectorAll('.methode').forEach(b =>
-        b.addEventListener('click', () => kiesMethode(b.dataset.methode)));
-      $('kies-knop').addEventListener('click', trekEi);
-      $('team-klaar').addEventListener('click', () => { state.idx++; beginTeam(); });
       $('naam-ok').addEventListener('click', bevestigNaam);
       $('naam-terug').addEventListener('click', terugVanNaam);
       $('duif-naam').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); bevestigNaam(); } });
-      $('kopieer-keuze').addEventListener('click', kopieerKeuze);
+
+      if (TEAMMODE) { TEAM = resolveTeam(model); return initTeam(model, live, banner); }
+      return initBeheer(model, live, banner);
     } catch (err) {
       banner.className = 'banner';
       banner.textContent = 'Kon de gegevens niet laden: ' + err.message;
     }
   }
 
-  function startDraft() {
-    const order = [...$('opzet-volgorde').children].map(li => li.dataset.team);
-    if (!order.length) { $('opzet-melding').className = 'melding fout'; $('opzet-melding').textContent = 'Geen teams.'; return; }
-    if (!state.available.length && !Object.keys(state.takenByTeam).length) {
+  /* ---- Beheerder: hub met teamlinks ---- */
+  function initBeheer(model, live, banner) {
+    const teams = (model.deelnemers && model.deelnemers.length)
+      ? model.deelnemers.slice()
+      : [...model.roster];
+    teams.sort((a, b) => a.localeCompare(b, 'nl'));
+
+    const lijst = $('opzet-volgorde');
+    lijst.innerHTML = '';
+    teams.forEach((t, i) => lijst.append(maakTeamLink(t, i)));
+    $('opzet-telling').textContent = teams.length + ' teams';
+
+    if (!teams.length) {
       $('opzet-melding').className = 'melding fout';
-      $('opzet-melding').textContent = 'Er zijn nog geen duiven. Zet ze eerst klaar op de pagina Voorbereiden.';
+      $('opzet-melding').textContent = 'Er zijn nog geen deelnemers. Zet ze eerst klaar op de pagina Voorbereiden.';
+    }
+
+    banner.className = 'banner' + (live ? ' live' : '');
+    banner.innerHTML = live
+      ? 'Live · richtgetal ' + state.perTeam + ' duiven per team (aan te passen op Voorbereiden).'
+      : 'Demo-modus · de teamlinks werken, maar keuzes worden nog niet opgeslagen ' +
+        '(stel API_URL in <code>config.js</code> in om echt op te slaan).';
+  }
+
+  /* ---- Teampagina ---- */
+  function initTeam(model, live, banner) {
+    // Menu verbergen: dit team mag niet naar andere pagina's.
+    const nav = document.querySelector('nav.tabs'); if (nav) nav.remove();
+
+    // Onbekende of dubbelzinnige teamlink? (resolveTeam gaf null)
+    if (!TEAM) {
+      document.querySelector('header.app .sub').textContent = 'Keuzemoment';
+      toon('scherm-opzet');
+      $('opzet-volgorde').innerHTML = '';
+      $('opzet-telling').textContent = '';
+      $('opzet-melding').className = 'melding fout';
+      $('opzet-melding').textContent = 'Deze teamlink ("' + TEAMPARAM + '") hoort bij geen ' +
+        '(of meer dan één) team. Vraag de beheerder om de juiste link.';
+      banner.className = 'banner'; banner.textContent = '';
       return;
     }
-    state.order = order;
-    state.perTeam = Math.max(1, Number($('per-team').value) || 8);
+
+    document.querySelector('header.app .sub').textContent = 'Keuzemoment · ' + TEAM;
+    document.title = TEAM + ' — Keuzemoment';
+
+    banner.className = 'banner' + (live ? ' live' : '');
+    banner.innerHTML = live
+      ? 'Kies <strong>' + state.perTeam + '</strong> duiven (eerder stoppen of er één bij mag). ' +
+        'De lijst werkt realtime bij terwijl andere teams kiezen.'
+      : 'Demo-modus · oefen vrij; keuzes worden nog niet opgeslagen.';
+
+    state.order = [TEAM];
     state.idx = 0;
+
+    document.querySelectorAll('.methode').forEach(b =>
+      b.addEventListener('click', () => kiesMethode(b.dataset.methode)));
+    $('kies-knop').addEventListener('click', trekEi);
+    $('team-klaar').addEventListener('click', () => { state.idx++; beginTeam(); });
+    $('kopieer-keuze').addEventListener('click', kopieerKeuze);
+
     toon('scherm-beurt');
     beginTeam();
+    startRealtime();
   }
 
   init();

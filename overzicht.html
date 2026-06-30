@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overzicht — Duivencompetitie</title>
+  <link rel="icon" href="./assets/logo.png">
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
+      <div>
+        <h1 id="titel">Duivencompetitie</h1>
+        <div class="sub">Overzicht per team</div>
+      </div>
+      <nav class="tabs">
+        <a href="./voorbereiden.html">Voorbereiden</a>
+        <a href="./keuzemoment.html">Keuzemoment</a>
+        <a href="./overzicht.html" class="active">Overzicht</a>
+        <a href="./invoer.html">Uitslag invoeren</a>
+        <a href="./index.html">Tussenstand</a>
+      </nav>
+    </header>
+
+    <div id="banner"></div>
+
+    <p class="sub" style="margin:0 0 18px">
+      Per team de gekozen duiven met hun punten <strong>per etappe</strong> en het
+      totaal. Met het <strong>potlood ✏️</strong> achter een duif kun je de naam
+      wijzigen of de duif uit dit team halen.
+    </p>
+
+    <div id="inhoud"><div class="loading">Overzicht laden…</div></div>
+
+    <footer class="app">Een Goed Stel Duifjes ✦</footer>
+  </div>
+
+  <!-- ===== Wijzig-modal (naam veranderen) ===== -->
+  <div id="wijzig-overlay" class="overlay verborgen">
+    <div class="modal">
+      <div class="modal-nummer">
+        <div class="mn-kort" id="wz-kort">—</div>
+        <div class="mn-lang" id="wz-lang"></div>
+      </div>
+      <label for="wz-naam" class="modal-label">Nieuwe naam voor deze duif</label>
+      <input id="wz-naam" type="text" placeholder="Naam van de duif" autocomplete="off" maxlength="40">
+      <div class="knoppen midden">
+        <button id="wz-annuleer" class="ghost" type="button">Annuleren</button>
+        <button id="wz-ok" class="primary" type="button">Naam opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./assets/scoring.js"></script>
+  <script src="./assets/api.js"></script>
+  <script src="./assets/overzicht.js"></script>
+</body>
+</html>
