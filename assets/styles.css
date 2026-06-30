@@ -493,8 +493,8 @@ footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-
   .beurt-team { font-size: 1.7rem; }
   .beurt-voortgang { align-self: flex-start; white-space: normal; }
 
-  /* Methodeknoppen onder elkaar zodat ze niet samengeknepen worden */
-  .methode-knoppen { grid-template-columns: 1fr; }
-  button.methode { padding: 16px; }
-  button.methode .ikoon { font-size: 2rem; }
+  /* Methodeknoppen blijven naast elkaar, alleen iets compacter */
+  .methode-knoppen { gap: 10px; }
+  button.methode { padding: 16px 10px; }
+  button.methode .ikoon { font-size: 1.9rem; }
 }
