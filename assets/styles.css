@@ -400,8 +400,14 @@ table.overzicht-tabel thead th {
   font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
   letter-spacing: .04em; border-bottom: 2px solid var(--line); text-align: right;
 }
-/* tekstkolommen links, getalkolommen rechts */
+/* tekstkolommen links (ook de kop) — anders wint de rechts-uitlijning van thead th */
 .k-naam, .k-ring { text-align: left; }
+table.overzicht-tabel thead th.k-naam,
+table.overzicht-tabel thead th.k-ring { text-align: left; }
+/* Deelnemers-tabel (zonder de sorteerbare duivenlijst): laat de ringnummer-kolom
+   de vrije ruimte opvullen, zodat het nummer naast de naam staat en Tot rechts blijft. */
+table.overzicht-tabel:not(.duivenlijst-tabel) .k-ring,
+table.overzicht-tabel:not(.duivenlijst-tabel) .od-ring { width: 100%; }
 .od-naam { font-weight: 600; text-align: left; }
 .od-naam.naamloos { color: var(--muted); font-style: italic; font-weight: 500; }
 .od-ring { color: var(--muted); font-size: .85rem; text-align: left; }
