@@ -404,8 +404,11 @@ table.overzicht-tabel thead th {
 .k-naam, .k-ring { text-align: left; }
 table.overzicht-tabel thead th.k-naam,
 table.overzicht-tabel thead th.k-ring { text-align: left; }
-/* Deelnemers-tabel (zonder de sorteerbare duivenlijst): laat de ringnummer-kolom
-   de vrije ruimte opvullen, zodat het nummer naast de naam staat en Tot rechts blijft. */
+/* Deelnemers-tabel (zonder de sorteerbare duivenlijst): naamkolom vaste breedte
+   (namen passen, maar niet te breed), en de ringnummer-kolom vult de rest zodat
+   het nummer naast de naam staat en Tot rechts blijft. */
+table.overzicht-tabel:not(.duivenlijst-tabel) .k-naam,
+table.overzicht-tabel:not(.duivenlijst-tabel) .od-naam { width: 160px; }
 table.overzicht-tabel:not(.duivenlijst-tabel) .k-ring,
 table.overzicht-tabel:not(.duivenlijst-tabel) .od-ring { width: 100%; }
 .od-naam { font-weight: 600; text-align: left; }
