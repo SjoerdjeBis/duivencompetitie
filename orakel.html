@@ -33,9 +33,9 @@
   @keyframes val{to{transform:translateY(110vh) rotate(320deg); opacity:0}}
 
   /* podium */
-  .stage{position:relative; z-index:2; min-height:100svh; min-height:100vh;
+  .stage{position:relative; z-index:2; height:100vh; height:100dvh; overflow:hidden;
     display:flex; flex-direction:column; align-items:center;
-    padding:16px 18px calc(18px + env(safe-area-inset-bottom)); }
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom)); }
   .kop{width:100%; max-width:520px; display:flex; align-items:center;
     justify-content:space-between; gap:12px; padding:6px 2px 2px}
   .merk{display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:.02em}
@@ -45,13 +45,15 @@
   .voortgang{font-variant-numeric:tabular-nums; font-size:.78rem; color:var(--muted);
     font-weight:700; letter-spacing:.06em}
 
-  .midden{flex:1; width:100%; display:flex; align-items:center; justify-content:center}
-  .kaart{width:100%; max-width:520px; text-align:center;
+  .midden{flex:1 1 auto; min-height:0; width:100%; display:flex; align-items:center; justify-content:center; padding:6px 0}
+  .kaart{width:100%; max-width:520px; max-height:100%; text-align:center;
     background:linear-gradient(180deg, rgba(38,52,84,.72), rgba(18,26,46,.72));
-    border:1px solid var(--line); border-radius:26px;
+    border:1px solid var(--line); border-radius:24px;
     box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
-    padding:26px 22px 28px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    position:relative; overflow:hidden}
+    padding:22px 20px 24px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    position:relative; overflow-x:hidden; overflow-y:auto;
+    scrollbar-width:none}
+  .kaart::-webkit-scrollbar{display:none}
   .kaart::after{content:""; position:absolute; top:0; left:-60%; width:60%; height:100%;
     background:linear-gradient(100deg,transparent, rgba(255,255,255,.10), transparent);
     transform:skewX(-18deg)}
@@ -63,9 +65,9 @@
   @keyframes vervaag{from{opacity:0; transform:translateY(8px)}to{opacity:1}}
 
   /* Koeroe */
-  .koeroe{width:180px; height:auto; display:block; margin:0 auto 6px;
+  .koeroe{width:150px; height:auto; display:block; margin:0 auto 4px;
     filter:drop-shadow(0 8px 20px rgba(0,0,0,.5)); animation:zweef 5s ease-in-out infinite}
-  .koeroe.klein{width:104px; margin-bottom:2px}
+  .koeroe.klein{width:74px; margin-bottom:0}
   @keyframes zweef{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
   .titel-groot{font-family:var(--serif); font-size:2.5rem; line-height:1;
@@ -116,6 +118,26 @@
   .dots i.klaar{background:rgba(62,168,119,.7)}
 
   @media (min-width:560px){ .titel-groot{font-size:3rem} .koeroe{width:200px} }
+  @media (max-width:559px){
+    .kop{padding:2px 2px 0}
+    .merk .m-titel{font-size:.86rem}
+    .kaart{padding:16px 15px 18px; border-radius:20px}
+    .koeroe{width:112px}
+    .koeroe.klein{width:58px}
+    .titel-groot{font-size:2rem}
+    .ondertitel{margin-bottom:10px; letter-spacing:.22em}
+    .lead{font-size:.98rem; line-height:1.5}
+    .team-eyebrow{margin-bottom:5px}
+    .team-naam{font-size:1.5rem; margin-bottom:8px}
+    .duiven-blok{margin-bottom:11px}
+    .duiven-lijst{font-size:.92rem; line-height:1.5}
+    .profetie{font-size:.98rem; line-height:1.48; margin-bottom:12px}
+    .orakel-regels{padding-top:11px; gap:6px}
+    .oregel{font-size:.8rem}
+    .voet{padding-top:9px; gap:6px}
+    .knop{padding:13px 20px; font-size:.98rem; border-radius:14px}
+    .dots i{width:5px; height:5px}
+  }
 </style>
 </head>
 <body>
