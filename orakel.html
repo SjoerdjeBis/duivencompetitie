@@ -79,9 +79,11 @@
     font-size:.66rem; font-weight:700; margin-bottom:8px}
   .team-naam{font-family:var(--serif); font-size:2rem; line-height:1.1; color:var(--gold);
     margin:0 0 14px}
-  .chips{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin:0 0 18px}
-  .chip{font-size:.76rem; font-weight:600; color:#dfe7f2; padding:5px 11px; border-radius:999px;
-    background:var(--green-soft); border:1px solid rgba(62,168,119,.35)}
+  .duiven-blok{margin:0 0 20px}
+  .duiven-kop{color:var(--gold); text-transform:uppercase; letter-spacing:.16em;
+    font-size:.66rem; font-weight:700; margin-bottom:7px}
+  .duiven-lijst{font-family:var(--sans); font-size:1rem; color:#eae3d5; line-height:1.75}
+  .duiven-lijst span{display:block}
   .profetie{font-family:var(--serif); font-size:1.12rem; line-height:1.62; color:#efe8da;
     margin:0 auto 20px; max-width:42ch}
   .profetie .glans{color:var(--gold)}
@@ -204,39 +206,39 @@ const INTRO = {
 };
 
 const TEAMS = [
-  {team:'Arjan Koenen', duiven:['Eowyn','Frenkie','Mees de Mus'], kd:'Mees de Mus', omen:'Verwar de mus niet met het avondeten.',
+  {team:'Arjan Koenen', duiven:['Eowyn','Frenkie','Mees de Mus'], label:'Minst waarschijnlijke duif', kd:'Mees de Mus', omen:'Verwar de mus niet met het avondeten.',
    p:`Koeroe ziet een leger van drie: een schildmaagd, een middenvelder en… een <span class="glans">mus</span>. Ja, een mus. De kosmos heeft het dubbel gecheckt. Toch fluistert het heelal dat wie een mus tussen de duiven durft te zetten, óf een ziener is, óf de weg volledig kwijt. Beide leveren punten op. Vermoedelijk.`},
-  {team:'Bart & Lobke', duiven:['Cabo!!','Mbappé','Rio'], kd:'Mbappé', omen:'Paspoort niet vergeten.',
+  {team:'Bart & Lobke', duiven:['Cabo!!','Mbappé','Rio'], label:'Duif met de snelste benen', kd:'Mbappé', omen:'Paspoort niet vergeten.',
    p:`Twee vakantiebestemmingen en een Fransman met turbobenen. Koeroe voorspelt: deze duiven vertrekken niet om te koersen, maar om <span class="glans">in te checken bij een all-inclusive</span>. Mbappé is al onderweg; de andere twee wachten op de shuttlebus. Snelheid gegarandeerd, aankomst een open vraag.`},
-  {team:'Eddy & Jolanda', duiven:['Bokkepoot','Bosse Bol','Tompouce'], kd:'Tompouce', omen:'Niet vervoeren bij warm weer.',
+  {team:'Eddy & Jolanda', duiven:['Bokkepoot','Bosse Bol','Tompouce'], label:'Duif met de meeste honger', kd:'Tompouce', omen:'Niet vervoeren bij warm weer.',
    p:`Een team volledig opgetrokken uit gebak. Koeroe ruikt banketbakkersroom op de wind. De profetie is glashelder: waar anderen op thermiek vliegen, vliegen deze op <span class="glans">suikerspiegel</span>. Let op de Tompouce — die bezwijkt onder druk, maar wát een laagjes.`},
-  {team:'Gilles & Tessa', duiven:['Ceesie','Charlie','Sep'], kd:'Sep', omen:'Onderschatting wordt kosmisch afgestraft.',
+  {team:'Gilles & Tessa', duiven:['Ceesie','Charlie','Sep'], label:'Zwaar onderschatte duif', kd:'Sep', omen:'Onderschatting wordt kosmisch afgestraft.',
    p:`Drie namen zó bescheiden dat de sterren ze bijna over het hoofd zagen. En dáár, zegt Koeroe, schuilt het gevaar. Onderschat Ceesie niet. Onderschat vooral <span class="glans">Sep</span> niet. Koeroe onderschatte ooit een Sep en praat er tot op heden niet over.`},
-  {team:'Hugo & Marieke', duiven:['Aline','Emma','Marie'], kd:'Aline', omen:'Haast is voor amateurs.',
+  {team:'Hugo & Marieke', duiven:['Aline','Emma','Marie'], label:'Duif met de beste looks', kd:'Aline', omen:'Haast is voor amateurs.',
    p:`Drie dames, één elegant complot. Koeroe ziet gratie, hij ziet klasse, hij ziet… geen enkele haast. Dit team komt niet als eerste thuis — dit team komt <span class="glans">op tijd</span> thuis. Er is een verschil, en alleen Aline kent het.`},
-  {team:'Jan & Monique', duiven:['Armando 2','Gunnar Sønsteby','Simo Häyhä'], kd:'Simo Häyhä', omen:'Maakt geen geluid. Maakt geen fouten.',
+  {team:'Jan & Monique', duiven:['Armando 2','Gunnar Sønsteby','Simo Häyhä'], label:'Meest geruisloze duif', kd:'Simo Häyhä', omen:'Maakt geen geluid. Maakt geen fouten.',
    p:`Een sequel, een verzetsheld en de dodelijkste scherpschutter uit de geschiedenis. Koeroe krijgt het koud. Dit is geen duiventeam, dit is een <span class="glans">geheime operatie</span>. Simo Häyhä vliegt niet — Simo Häyhä wácht. En Armando 2 is aantoonbaar beter dan Armando 1, aldus de sterren.`},
-  {team:'Jo & Monique', duiven:['Amy','Elio','Teun'], kd:'Teun', omen:'Familie kun je niet uitschakelen.',
+  {team:'Jo & Monique', duiven:['Amy','Elio','Teun'], label:'Meest onmisbare duif', kd:'Teun', omen:'Familie kun je niet uitschakelen.',
    p:`Koeroe ziet drie duiven die elkaars zinnen afmaken. Harmonie, zegt de kosmos. Verontrustend véél harmonie. Teun leidt, Amy corrigeert, Elio doet alsof hij luistert. Een <span class="glans">gezin</span>. Gezinnen winnen zelden de sprint, maar raken nooit verloren.`},
-  {team:'Lois & Wessel', duiven:['Geertje','Moffel','Piertje'], kd:'Moffel', omen:'Komt aan wanneer het uitkomt.',
+  {team:'Lois & Wessel', duiven:['Geertje','Moffel','Piertje'], label:'Meest ontspannen duif', kd:'Moffel', omen:'Komt aan wanneer het uitkomt.',
    p:`Geertje, Moffel en Piertje — namen die klinken als een knus dorp met precies één pinautomaat. Koeroe voorspelt: deze duiven koersen niet, ze <span class="glans">wandelen</span>. Maar onderschat de wandelaar nooit: de wandelaar komt altijd aan, meestal mét een verhaal.`},
-  {team:'Marco & Kelsey', duiven:['Duif 1','Duif 2','Duif 3 – leukere namen volgen'], kd:'Duif 2', omen:'Namen volgen. Punten misschien ook.',
+  {team:'Marco & Kelsey', duiven:['Duif 1','Duif 2','Duif 3 – leukere namen volgen'], label:'Duif die nog een naam zoekt', kd:'Duif 2', omen:'Namen volgen. Punten misschien ook.',
    p:`Koeroe tuurt in de nevel en leest: “Duif 1. Duif 2. Duif 3 – leukere namen volgen.” De sterren zwijgen eerbiedig. Nog nooit zag het orakel zóveel potentie in zó weinig moeite. Deze duiven weten <span class="glans">zelf nog niet wie ze zijn</span> — en dát maakt ze volstrekt onvoorspelbaar. Levensgevaarlijk.`},
-  {team:'Maurice & Simone', duiven:['Alberto Contador','Michael Schumacher','Rafael Nadal'], kd:'Michael Schumacher', omen:'Zelfgenoegzaamheid is de enige tegenstander.',
+  {team:'Maurice & Simone', duiven:['Alberto Contador','Michael Schumacher','Rafael Nadal'], label:'Duif met het grootste ego', kd:'Michael Schumacher', omen:'Zelfgenoegzaamheid is de enige tegenstander.',
    p:`Een Tourwinnaar, een Formule 1-legende en de koning van het gravel. Koeroe ziet een <span class="glans">podium dat zichzelf al heeft uitgeroepen</span>. Het probleem met kampioenen? Ze denken dat het vanzelf gaat. Schumacher pakt de bocht, Nadal de rally, Contador de berg — en de finish lacht in haar vuistje.`},
-  {team:'Niek & Wiet', duiven:['Big Virg','Jaap','Torx'], kd:'Big Virg', omen:'Groot. Ongepolijst. Onvermijdelijk.',
+  {team:'Niek & Wiet', duiven:['Big Virg','Jaap','Torx'], label:'Duif met de breedste borst', kd:'Big Virg', omen:'Groot. Ongepolijst. Onvermijdelijk.',
    p:`Een reus, een Jaap en een schroefkop. Koeroe voelt rauwe, ongeslepen kracht. Big Virg torent boven alles uit, Torx draait zich <span class="glans">vast in de overwinning</span>, en Jaap… Jaap is er ook. Onmisbaar, die Jaap. Vraag niet waarom, dat weet de kosmos ook niet.`},
-  {team:'Niene & Aron', duiven:['Dumfel Demfries','Noa Kort','Roekoeman'], kd:'Dumfel Demfries', omen:'Let op de rechterflank.',
+  {team:'Niene & Aron', duiven:['Dumfel Demfries','Noa Kort','Roekoeman'], label:'Duif met de meeste loopkracht', kd:'Dumfel Demfries', omen:'Let op de rechterflank.',
    p:`Dumfel Demfries dendert over de flank, Roekoeman waakt in de schemer, en Noa Kort houdt het — de naam zegt het al — <span class="glans">kort</span>. Koeroe ziet een team dat harder loopt dan het zelf doorheeft. Let op die rechtsback: die levert de voorzet waar niemand op rekende.`},
-  {team:'Paul & Nicolette', duiven:['Max V/D Bandijk','Milow V/D Bandijk','Moos V/D Bandijk'], kd:'Max V/D Bandijk', omen:'De dijk breekt nooit.',
+  {team:'Paul & Nicolette', duiven:['Max V/D Bandijk','Milow V/D Bandijk','Moos V/D Bandijk'], label:'Blauwst bloedige duif', kd:'Max V/D Bandijk', omen:'De dijk breekt nooit.',
    p:`Drie duiven, één achternaam: de dynastie <span class="glans">Van De Bandijk</span>. Koeroe buigt voor zoveel bloedlijn. Dit is geen team, dit is een familiebedrijf, en het familiebedrijf duldt geen concurrentie aan de dijk. Max opent, Milow bevestigt, Moos maakt af. Adel verplicht.`},
-  {team:'Rick & Ezra', duiven:['Ach, ik kom er zo op','Die daar','Dinges'], kd:'Dinges', omen:'Je vergeet ze — tot het te laat is.',
+  {team:'Rick & Ezra', duiven:['Ach, ik kom er zo op','Die daar','Dinges'], label:'Makkelijkst te vergeten duif', kd:'Dinges', omen:'Je vergeet ze — tot het te laat is.',
    p:`Koeroe leest de namen driemaal en legt de kristallen bol even weg. “Ach, ik kom er zo op.” “Die daar.” “Dinges.” Dit team heeft het <span class="glans">uitstel tot kunstvorm</span> verheven. En tóch — net als je ze vergeet, zijn ze er. Naamloos, gezichtsloos, en verduiveld lastig te verslaan.`},
-  {team:'Sjoerd & Marije', duiven:['Ben de Pompoen','Dodo','SixSeven'], kd:'Dodo', omen:'Weet niet dat vliegen onmogelijk is.',
+  {team:'Sjoerd & Marije', duiven:['Ben de Pompoen','Dodo','SixSeven'], label:'Meest opvallende duif', kd:'Dodo', omen:'Weet niet dat vliegen onmogelijk is.',
    p:`De architect van dit alles stuurt een pompoen, een uitgestorven vogel en een getal de hemel in. Koeroe waardeert de brutaliteit. De <span class="glans">Dodo kán niet vliegen</span> — dat weet de Dodo niet, en dáárin schuilt zijn kracht. Ben de Pompoen rolt waar anderen fladderen. SixSeven weet zelf niet of het zes of zeven is, en dat houdt de tegenstand klaarwakker.`},
-  {team:'Tim & Kim', duiven:['Framboos','Kiwi','Senna'], kd:'Senna', omen:'Niet blenden.',
+  {team:'Tim & Kim', duiven:['Framboos','Kiwi','Senna'], label:'Duif met de meeste pk\'s', kd:'Senna', omen:'Niet blenden.',
    p:`Een fruitschaal met een raceziel. Koeroe ziet vitamines én benzine. Framboos en Kiwi brengen frisheid, Senna brengt het <span class="glans">gaspedaal</span>. Zolang niemand ze per ongeluk in een smoothie gooit, komt dit team verrassend ver.`},
-  {team:'Tom Aarsman', duiven:['Boracay','Cebu','Manila'], kd:'Manila', omen:'Koerst richting het strand.',
+  {team:'Tom Aarsman', duiven:['Boracay','Cebu','Manila'], label:'Meest tropische duif', kd:'Manila', omen:'Koerst richting het strand.',
    p:`Drie Filipijnse parels, één duif in z'n eentje aan het roer. Koeroe ziet een solozeiler met een tropische vloot. Terwijl anderen met z'n tweeën twijfelen, beslist Tom <span class="glans">alleen</span> — snel, en doorgaans richting het strand. Manila wijst de weg, Cebu volgt, Boracay zit al aan de cocktail.`}
 ];
 
@@ -287,11 +289,14 @@ function render(){
       ${KOEROE.replace('class="koeroe"','class="koeroe klein"')}
       <div class="team-eyebrow">Voorspelling ${nr} / ${teamAantal}</div>
       <h2 class="team-naam">${s.team}</h2>
-      <div class="chips">${s.duiven.map(d=>`<span class="chip">${d}</span>`).join('')}</div>
+      <div class="duiven-blok">
+        <div class="duiven-kop">De 3 gekozen duiven</div>
+        <div class="duiven-lijst">${s.duiven.map(d=>`<span>${d}</span>`).join('')}</div>
+      </div>
       <p class="profetie">${s.p}</p>
       <div class="orakel-regels">
-        <div class="oregel"><span class="ico">🕯️</span><span><b>Kosmische duif:</b> <span class="kd">${s.kd}</span></span></div>
-        <div class="oregel"><span class="ico">⚠️</span><span><b>Het teken:</b> ${s.omen}</span></div>
+        <div class="oregel"><span class="ico">✨</span><span><b>${s.label}:</b> <span class="kd">${s.kd}</span></span></div>
+        <div class="oregel"><span class="ico">⚠️</span><span><b>Let op:</b> ${s.omen}</span></div>
       </div></div>`;
     knop.textContent = nr < teamAantal ? 'Volgende voorspelling ▸' : 'De slotprofetie ▸';
     knop.classList.remove('goud');
