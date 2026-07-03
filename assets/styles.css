@@ -197,6 +197,19 @@ button.groot { font-size: 1.05rem; padding: 14px 28px; }
   background: var(--accent); color: #fff; border-radius: 10px; padding: 11px 18px;
 }
 
+/* --- Beheer-startpagina (index): tegels naar de onderdelen --- */
+.beheer-tegels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.beheer-tegels a {
+  display: flex; flex-direction: column; gap: 3px; text-decoration: none;
+  padding: 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: #fff; color: var(--ink); font-weight: 700;
+}
+.beheer-tegels a span { font-weight: 500; font-size: .82rem; color: var(--muted); }
+.beheer-tegels a:hover { border-color: var(--accent); background: var(--accent-soft); }
+.beheer-tegels a.uit { background: var(--accent-soft); border-color: #cfe6da; color: var(--accent); }
+.beheer-tegels a.uit span { color: #4a7a67; }
+@media (max-width: 620px) { .beheer-tegels { grid-template-columns: 1fr; } }
+
 /* --- Opzet: draft-volgorde --- */
 ol.opzet-volgorde { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 ol.opzet-volgorde li {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tussenstand — Duivencompetitie</title>
+  <title>Beheer — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
   <link rel="stylesheet" href="./assets/styles.css">
 </head>
@@ -13,7 +13,7 @@
       <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
       <div>
         <h1 id="titel">Duivencompetitie</h1>
-        <div class="sub">Openbare tussenstand</div>
+        <div class="sub">Beheeromgeving</div>
       </div>
       <nav class="tabs">
         <a href="./voorbereiden.html">Voorbereiden</a>
@@ -21,19 +21,33 @@
         <a href="./deelnemers.html">Deelnemers</a>
         <a href="./duivenlijst.html">Overzicht duiven</a>
         <a href="./invoer.html">Uitslag invoeren</a>
-        <a href="./index.html" class="active">Tussenstand</a>
+        <a href="./tussenstandopen.html" target="_blank" rel="noopener">Tussenstand ↗</a>
       </nav>
     </header>
 
-    <div id="banner"></div>
-    <div id="inhoud"><div class="loading">Tussenstand laden…</div></div>
+    <div class="card">
+      <h2>Beheeromgeving 🕊️</h2>
+      <p class="sub" style="margin:-6px 0 16px">
+        Welkom! Kies hieronder een onderdeel. De <strong>tussenstand</strong> is
+        openbaar en opent in een nieuw venster.
+      </p>
+      <div class="beheer-tegels">
+        <a href="./voorbereiden.html">Voorbereiden<span>Seizoen &amp; duiven klaarzetten</span></a>
+        <a href="./keuzemoment.html">Keuzemoment<span>Keuzelinks per team</span></a>
+        <a href="./deelnemers.html">Deelnemers<span>Duiven per team</span></a>
+        <a href="./duivenlijst.html">Overzicht duiven<span>Alle duiven, sorteerbaar</span></a>
+        <a href="./invoer.html">Uitslag invoeren<span>Vluchtuitslagen invoeren</span></a>
+        <a class="uit" href="./tussenstandopen.html" target="_blank" rel="noopener">Tussenstand ↗<span>Openbaar · nieuw venster</span></a>
+      </div>
+    </div>
 
     <footer class="app">Een Goed Stel Duifjes ✦</footer>
   </div>
 
   <script src="./config.js"></script>
-  <script src="./assets/scoring.js"></script>
-  <script src="./assets/api.js"></script>
-  <script src="./assets/tussenstand.js"></script>
+  <script>
+    (function(){ var c = window.DUIVEN_CONFIG || {};
+      document.getElementById('titel').textContent = c.SEIZOEN || 'Duivencompetitie'; })();
+  </script>
 </body>
 </html>
