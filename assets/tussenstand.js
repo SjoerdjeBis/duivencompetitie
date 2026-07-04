@@ -27,6 +27,8 @@
     return el('span', { class: 'delta flat' }, '–');
   }
 
+  function ringChip(kort) { return el('span', { class: 'ring-chip' }, kort); }
+
   /* ---------- 1) Duiven vandaag (laatste vlucht, top 25) ---------- */
   function renderDuivenVandaag(stand, model) {
     const last = model.vluchten[model.vluchten.length - 1];
@@ -34,15 +36,14 @@
 
     const rijen = finishers.map(f => {
       const duif = f._duif || {};
-      const ring = f.ring_kort || '—';
-      const team = (duif.teams && duif.teams.length)
-        ? duif.teams.join(' · ')
-        : (f.naam_override || '—');
+      const heeftTeam = duif.teams && duif.teams.length;
+      const team = heeftTeam ? duif.teams.join(' · ') : (f.naam_override || '—');
       const tr = el('tr', {},
         el('td', { class: 'dag-pos' }, String(f.positie)),
-        el('td', { class: 'dag-ring' }, ring),
-        el('td', { class: 'dag-team' }, team));
-      if (!duif.teams || !duif.teams.length) tr.classList.add('reserve');
+        el('td', { class: 'dag-ring' }, f.ring_kort ? ringChip(f.ring_kort) : '—'),
+        el('td', { class: 'dag-main' }, team),
+        el('td', { class: 'dag-pt' }, String(f._punten || 0), el('span', { class: 'pt' }, ' pt')));
+      if (!heeftTeam) tr.classList.add('reserve');
       return tr;
     });
 
@@ -50,7 +51,8 @@
       el('thead', {}, el('tr', {},
         el('th', { class: 'dag-pos' }, '#'),
         el('th', { class: 'dag-ring' }, 'Ringnr'),
-        el('th', { class: 'dag-team' }, 'Team'))),
+        el('th', { class: 'dag-main' }, 'Team'),
+        el('th', { class: 'dag-pt' }, 'Punten'))),
       el('tbody', {}, rijen));
 
     return el('div', { class: 'card' },
@@ -94,18 +96,36 @@
   }
 
   /* ---------- 4) Beste duiven van het seizoen ---------- */
-  function renderBesteDuiven(stand) {
-    const ul = el('ul', { class: 'lijst' });
-    if (stand.besteDuiven.length) {
-      stand.besteDuiven.forEach((d, i) => ul.append(el('li', {},
-        el('span', {},
-          el('span', { class: 'naam' }, (i + 1) + '. ' + d.naam),
-          d.teams.length ? el('span', { class: 'v', html: '&nbsp; ' + d.teams.join(' · ') }) : ''),
-        el('span', { class: 'p' }, d.totaal + ' pt'))));
-    } else {
-      ul.append(el('li', { class: 'leeg' }, 'Nog geen scores'));
+  function renderBesteDuiven(stand, model) {
+    if (!stand.besteDuiven.length) {
+      return el('div', { class: 'card' },
+        el('h2', {}, 'Beste duiven van het seizoen'),
+        el('div', { class: 'leeg' }, 'Nog geen scores'));
     }
-    return el('div', { class: 'card' }, el('h2', {}, 'Beste duiven van het seizoen'), ul);
+
+    const rijen = stand.besteDuiven.map((d, i) => {
+      const duif = model.byNaam[d.naam];
+      const kort = duif ? duif.ring_kort : '';
+      const main = el('td', { class: 'dag-main' }, el('span', { class: 'd-naam' }, d.naam));
+      if (d.teams.length) main.append(el('span', { class: 'v', html: '&nbsp; ' + d.teams.join(' · ') }));
+      return el('tr', {},
+        el('td', { class: 'dag-pos' }, String(i + 1)),
+        el('td', { class: 'dag-ring' }, kort ? ringChip(kort) : '—'),
+        main,
+        el('td', { class: 'dag-pt' }, String(d.totaal), el('span', { class: 'pt' }, ' pt')));
+    });
+
+    const tabel = el('table', { class: 'dag-tabel' },
+      el('thead', {}, el('tr', {},
+        el('th', { class: 'dag-pos' }, '#'),
+        el('th', { class: 'dag-ring' }, 'Ringnr'),
+        el('th', { class: 'dag-main' }, 'Duif'),
+        el('th', { class: 'dag-pt' }, 'Punten'))),
+      el('tbody', {}, rijen));
+
+    return el('div', { class: 'card' },
+      el('h2', {}, 'Beste duiven van het seizoen'),
+      el('div', { class: 'tabel-scroll' }, tabel));
   }
 
   /* ---------- Tabbladen ---------- */
@@ -114,7 +134,7 @@
       { label: 'Duiven vandaag', build: () => renderDuivenVandaag(stand, model) },
       { label: 'Dagscore', build: () => renderDagscore(stand) },
       { label: 'Klassement', build: () => renderKlassement(stand) },
-      { label: 'Beste duiven', build: () => renderBesteDuiven(stand) }
+      { label: 'Beste duiven', build: () => renderBesteDuiven(stand, model) }
     ];
     const bar = el('div', { class: 'subtabs' });
     const panels = el('div', {});

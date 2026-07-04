@@ -119,9 +119,22 @@ table.dag-tabel thead th {
 }
 table.dag-tabel tbody tr:last-child td { border-bottom: 0; }
 table.dag-tabel .dag-pos { width: 34px; text-align: right; color: var(--muted); font-weight: 700; }
-table.dag-tabel .dag-ring { width: 68px; font-weight: 800; color: var(--accent); }
-table.dag-tabel .dag-team { width: 100%; }
-table.dag-tabel tr.reserve .dag-team { color: var(--muted); font-style: italic; }
+table.dag-tabel .dag-ring { width: 1%; white-space: nowrap; }
+table.dag-tabel .dag-main { width: 100%; }
+table.dag-tabel .dag-main .d-naam { font-weight: 700; }
+table.dag-tabel .dag-main .v { color: var(--muted); font-size: .82rem; }
+table.dag-tabel tr.reserve .dag-main { color: var(--muted); font-style: italic; }
+table.dag-tabel .dag-pt {
+  width: 1%; text-align: right; white-space: nowrap; font-weight: 800; color: var(--accent);
+}
+table.dag-tabel .dag-pt .pt { font-size: .72rem; color: var(--muted); font-weight: 700; }
+
+/* Ringnummer als kleine chip */
+.ring-chip {
+  display: inline-block; font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: .8rem; color: var(--accent); background: var(--accent-soft);
+  border: 1px solid #cfe6da; border-radius: 999px; padding: 2px 9px; line-height: 1.45;
+}
 
 /* Klassement zonder stijg-/daalpijltjes (1e vlucht) */
 ol.klassement.geen-delta li { grid-template-columns: 38px 1fr auto; }
