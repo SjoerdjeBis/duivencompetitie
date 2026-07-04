@@ -132,17 +132,41 @@ function saveUitslag(payload) {
       throw new Error('Kopregel van "Resultaten" mist een kolom (vlucht/positie/ring_kort).');
     }
 
-    // Bestaat deze vlucht al?
+    // Bestaande regels van deze vlucht (voor overschrijven en/of overlap-controle).
     var bestaande = readSheet(TAB.resultaten).filter(function (r) { return Number(r.vlucht) === vlucht; });
-    if (bestaande.length && !payload.overwrite) {
-      throw new Error('Vlucht ' + vlucht + ' bestaat al (' + bestaande.length +
-        ' regels). Stuur overwrite=true om te vervangen.');
-    }
+
     if (bestaande.length && payload.overwrite) {
-      // Verwijder bestaande regels van deze vlucht (van onder naar boven).
+      // Hele vlucht vervangen: verwijder bestaande regels (van onder naar boven).
       var all = sh.getDataRange().getValues();
       for (var r = all.length - 1; r >= 1; r--) {
         if (Number(all[r][idx.vlucht]) === vlucht) sh.deleteRow(r + 1);
+      }
+      bestaande = [];
+    }
+
+    // Overlap-controle i.p.v. blokkeren op vluchtnummer: een uitslag mag in
+    // meerdere delen worden ingestuurd (bv. eerst plek 1-9, daarna de rest),
+    // zolang dezelfde duif of dezelfde plaats niet twee keer voorkomt.
+    if (bestaande.length) {
+      var ringGezet = {}, posGezet = {};
+      bestaande.forEach(function (r) {
+        var rk = String(r.ring_kort || '').trim();
+        if (rk) ringGezet[rk] = true;
+        posGezet[Number(r.positie)] = true;
+      });
+      var dubbeleDuiven = [], dubbelePlaatsen = [];
+      finishers.forEach(function (f) {
+        var rk = String(f.ring_kort || '').trim();
+        if (rk && ringGezet[rk] && dubbeleDuiven.indexOf(rk) < 0) dubbeleDuiven.push(rk);
+        var p = Number(f.positie);
+        if (posGezet[p] && dubbelePlaatsen.indexOf(p) < 0) dubbelePlaatsen.push(p);
+      });
+      if (dubbeleDuiven.length || dubbelePlaatsen.length) {
+        var msg = 'Deze invoer overlapt met wat al in vlucht ' + vlucht + ' staat.';
+        if (dubbeleDuiven.length) msg += ' Al ingevoerde duif/duiven: ' + dubbeleDuiven.join(', ') + '.';
+        if (dubbelePlaatsen.length) msg += ' Al ingevulde plaats(en): ' + dubbelePlaatsen.join(', ') + '.';
+        msg += ' Haal die uit je invoer, of vink "Bestaande vlucht vervangen" aan om de hele vlucht opnieuw te doen.';
+        throw new Error(msg);
       }
     }
 
@@ -157,7 +181,8 @@ function saveUitslag(payload) {
     });
     sh.getRange(sh.getLastRow() + 1, 1, nieuwe.length, header.length).setValues(nieuwe);
 
-    return jsonOut({ ok: true, vlucht: vlucht, aantal: nieuwe.length });
+    return jsonOut({ ok: true, vlucht: vlucht, aantal: nieuwe.length,
+      totaal: bestaande.length + nieuwe.length });
 }
 
 /** Vervangt de inhoud (onder de kopregel) van een tabblad door nieuwe rijen.

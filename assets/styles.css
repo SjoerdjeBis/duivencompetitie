@@ -126,6 +126,10 @@ ul.lijst .p { font-variant-numeric: tabular-nums; font-weight: 700; }
 .pos-rij.dup input { border-color: var(--danger); background: #fdf0ee; }
 
 .knoppen { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.overschrijf { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px;
+  font-size: .85rem; color: var(--muted); cursor: pointer; }
+.overschrijf input { margin-top: 2px; flex: none; }
+.overschrijf strong { color: var(--ink); }
 button {
   font: inherit; font-weight: 700; cursor: pointer; border: 0; border-radius: 10px;
   padding: 11px 18px;

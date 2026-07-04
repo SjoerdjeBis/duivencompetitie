@@ -128,9 +128,16 @@
     const knop = $('verzend');
     knop.disabled = true; knop.textContent = 'Verzenden…';
     try {
-      await API.submitUitslag({ vlucht, finishers });
-      toonMelding('ok', '✓ Vlucht ' + vlucht + ' opgeslagen! Bekijk de bijgewerkte ' +
-        '<a href="./index.html">tussenstand</a>.');
+      const overwrite = !!($('overschrijf') && $('overschrijf').checked);
+      const res = await API.submitUitslag({ vlucht, finishers, overwrite });
+      const aantal = (res && res.aantal) || finishers.length;
+      const totaal = res && res.totaal;
+      const extra = (totaal && totaal !== aantal)
+        ? (' (' + aantal + ' toegevoegd, ' + totaal + ' in totaal voor deze vlucht)')
+        : '';
+      toonMelding('ok', '✓ Vlucht ' + vlucht + ' opgeslagen' + extra + '! Bekijk de ' +
+        '<a href="./tussenstandopen.html" target="_blank" rel="noopener">tussenstand</a>.');
+      if ($('overschrijf')) $('overschrijf').checked = false;
     } catch (err) {
       toonMelding('fout', 'Opslaan mislukt: ' + err.message);
     } finally {
