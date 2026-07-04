@@ -1,4 +1,8 @@
-/* tussenstand.js — rendert de openbare tussenstand. */
+/* tussenstand.js — openbare tussenstand met 4 tabbladen:
+   1) Duiven vandaag (top 25: plek, kort ringnummer, team)
+   2) Dagscore (deelnemers, laatste vlucht)
+   3) Algemeen klassement (pijltjes pas vanaf de 2e vlucht)
+   4) Beste duiven van het seizoen */
 (function () {
   'use strict';
 
@@ -13,7 +17,7 @@
       else if (k === 'html') n.innerHTML = attrs[k];
       else n.setAttribute(k, attrs[k]);
     }
-    kids.flat().forEach(c => n.append(c.nodeType ? c : document.createTextNode(c)));
+    kids.flat().forEach(c => n.append(c && c.nodeType ? c : document.createTextNode(c)));
     return n;
   };
 
@@ -23,49 +27,112 @@
     return el('span', { class: 'delta flat' }, '–');
   }
 
+  /* ---------- 1) Duiven vandaag (laatste vlucht, top 25) ---------- */
+  function renderDuivenVandaag(stand, model) {
+    const last = model.vluchten[model.vluchten.length - 1];
+    const finishers = last.finishers.slice().sort((a, b) => a.positie - b.positie).slice(0, 25);
+
+    const rijen = finishers.map(f => {
+      const duif = f._duif || {};
+      const ring = f.ring_kort || '—';
+      const team = (duif.teams && duif.teams.length)
+        ? duif.teams.join(' · ')
+        : (f.naam_override || '—');
+      const tr = el('tr', {},
+        el('td', { class: 'dag-pos' }, String(f.positie)),
+        el('td', { class: 'dag-ring' }, ring),
+        el('td', { class: 'dag-team' }, team));
+      if (!duif.teams || !duif.teams.length) tr.classList.add('reserve');
+      return tr;
+    });
+
+    const tabel = el('table', { class: 'dag-tabel' },
+      el('thead', {}, el('tr', {},
+        el('th', { class: 'dag-pos' }, '#'),
+        el('th', { class: 'dag-ring' }, 'Ringnr'),
+        el('th', { class: 'dag-team' }, 'Team'))),
+      el('tbody', {}, rijen));
+
+    return el('div', { class: 'card' },
+      el('h2', {}, 'Uitslag duiven vandaag ', el('span', { class: 'count' }, '· vlucht ' + last.nummer)),
+      el('div', { class: 'tabel-scroll' }, tabel));
+  }
+
+  /* ---------- 2) Dagscore deelnemers (laatste vlucht) ---------- */
+  function renderDagscore(stand) {
+    const ul = el('ul', { class: 'lijst' });
+    const scores = (stand.laatsteVlucht && stand.laatsteVlucht.scores) || [];
+    if (scores.length) {
+      scores.forEach((s, i) => ul.append(el('li', {},
+        el('span', { class: 'naam' }, (i + 1) + '. ' + s.deelnemer),
+        el('span', { class: 'p' }, s.punten + ' pt'))));
+    } else {
+      ul.append(el('li', { class: 'leeg' }, 'Nog geen uitslagen'));
+    }
+    return el('div', { class: 'card' },
+      el('h2', {}, 'Dagscore deelnemers ', el('span', { class: 'count' },
+        stand.laatsteVlucht ? '· vlucht ' + stand.laatsteVlucht.nummer : '')),
+      ul);
+  }
+
+  /* ---------- 3) Algemeen klassement ---------- */
   function renderKlassement(stand) {
-    const ol = el('ol', { class: 'klassement' });
+    const toonDelta = stand.aantalVluchten > 1; // 1e vlucht: geen stijg-/daalpijltjes
+    const ol = el('ol', { class: 'klassement' + (toonDelta ? '' : ' geen-delta') });
     stand.klassement.forEach(row => {
       const li = el('li', { class: row.rang <= 3 ? 'top' + row.rang : '' });
       li.append(el('span', { class: 'rang' }, String(row.rang)));
-      const naamWrap = el('span', { class: 'naam' }, row.deelnemer);
-      li.append(naamWrap);
-      li.append(deltaBadge(row.rangVerschil));
+      li.append(el('span', { class: 'naam' }, row.deelnemer));
+      if (toonDelta) li.append(deltaBadge(row.rangVerschil));
       li.append(el('span', { class: 'score' }, String(row.totaal), el('span', { class: 'pt' }, ' pt')));
       ol.append(li);
     });
     return el('div', { class: 'card' },
-      el('h2', {}, 'Algemeen klassement ', el('span', { class: 'count' }, '· ' + stand.aantalVluchten + ' vluchten')),
+      el('h2', {}, 'Algemeen klassement ', el('span', { class: 'count' }, '· ' + stand.aantalVluchten +
+        (stand.aantalVluchten === 1 ? ' vlucht' : ' vluchten'))),
       ol);
   }
 
-  function renderLijstjes(stand) {
-    const grid = el('div', { class: 'tweekolom' });
-
-    // Laatste vlucht
-    const lv = el('ul', { class: 'lijst' });
-    if (stand.laatsteVlucht && stand.laatsteVlucht.scores.length) {
-      stand.laatsteVlucht.scores.slice(0, 12).forEach(s =>
-        lv.append(el('li', {}, el('span', { class: 'naam' }, s.deelnemer), el('span', { class: 'p' }, s.punten + ' pt'))));
-    } else {
-      lv.append(el('li', { class: 'leeg' }, 'Nog geen uitslagen'));
-    }
-    grid.append(el('div', { class: 'card' },
-      el('h2', {}, 'Laatste vlucht ', el('span', { class: 'count' },
-        stand.laatsteVlucht ? '· nr ' + stand.laatsteVlucht.nummer : '')),
-      lv));
-
-    // Beste duiven
-    const bd = el('ul', { class: 'lijst' });
-    stand.besteDuiven.slice(0, 12).forEach(d =>
-      bd.append(el('li', {},
-        el('span', {}, el('span', { class: 'naam' }, d.naam),
+  /* ---------- 4) Beste duiven van het seizoen ---------- */
+  function renderBesteDuiven(stand) {
+    const ul = el('ul', { class: 'lijst' });
+    if (stand.besteDuiven.length) {
+      stand.besteDuiven.forEach((d, i) => ul.append(el('li', {},
+        el('span', {},
+          el('span', { class: 'naam' }, (i + 1) + '. ' + d.naam),
           d.teams.length ? el('span', { class: 'v', html: '&nbsp; ' + d.teams.join(' · ') }) : ''),
         el('span', { class: 'p' }, d.totaal + ' pt'))));
-    grid.append(el('div', { class: 'card' },
-      el('h2', {}, 'Beste duiven van het seizoen'), bd));
+    } else {
+      ul.append(el('li', { class: 'leeg' }, 'Nog geen scores'));
+    }
+    return el('div', { class: 'card' }, el('h2', {}, 'Beste duiven van het seizoen'), ul);
+  }
 
-    return grid;
+  /* ---------- Tabbladen ---------- */
+  function buildTabs(stand, model) {
+    const defs = [
+      { label: 'Duiven vandaag', build: () => renderDuivenVandaag(stand, model) },
+      { label: 'Dagscore', build: () => renderDagscore(stand) },
+      { label: 'Klassement', build: () => renderKlassement(stand) },
+      { label: 'Beste duiven', build: () => renderBesteDuiven(stand) }
+    ];
+    const bar = el('div', { class: 'subtabs' });
+    const panels = el('div', {});
+    const knoppen = [];
+    const vlakken = [];
+    defs.forEach((d, i) => {
+      const knop = el('button', { class: 'subtab' + (i === 0 ? ' active' : ''), type: 'button' }, d.label);
+      const vlak = el('div', { class: 'subtab-panel' + (i === 0 ? '' : ' verborgen') }, d.build());
+      knop.addEventListener('click', () => {
+        knoppen.forEach(b => b.classList.remove('active'));
+        vlakken.forEach(v => v.classList.add('verborgen'));
+        knop.classList.add('active');
+        vlak.classList.remove('verborgen');
+      });
+      knoppen.push(knop); vlakken.push(vlak);
+      bar.append(knop); panels.append(vlak);
+    });
+    return el('div', {}, bar, panels);
   }
 
   async function init() {
@@ -85,8 +152,7 @@
         inhoud.append(el('div', { class: 'card' }, el('div', { class: 'leeg' }, 'Nog geen vluchten ingevoerd.')));
         return;
       }
-      inhoud.append(renderKlassement(stand));
-      inhoud.append(renderLijstjes(stand));
+      inhoud.append(buildTabs(stand, model));
     } catch (err) {
       banner.className = 'banner';
       inhoud.innerHTML = '';

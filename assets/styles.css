@@ -97,6 +97,35 @@ li.top3 .rang { background: var(--bronze); color: #fff; }
 
 /* ---- Lijstjes (laatste vlucht / beste duiven) ---- */
 .tweekolom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+/* Tabbladen op de openbare tussenstand */
+.subtabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.subtab {
+  appearance: none; font: inherit; font-weight: 700; font-size: .88rem; cursor: pointer;
+  padding: 9px 15px; border-radius: 999px; border: 1px solid var(--line);
+  background: #fff; color: var(--muted); white-space: nowrap;
+}
+.subtab:hover { border-color: var(--accent); color: var(--ink); }
+.subtab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Dag-uitslag van de duiven (tab 1) */
+table.dag-tabel { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.dag-tabel th, table.dag-tabel td {
+  padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap;
+}
+table.dag-tabel thead th {
+  font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .04em; border-bottom: 2px solid var(--line);
+}
+table.dag-tabel tbody tr:last-child td { border-bottom: 0; }
+table.dag-tabel .dag-pos { width: 34px; text-align: right; color: var(--muted); font-weight: 700; }
+table.dag-tabel .dag-ring { width: 68px; font-weight: 800; color: var(--accent); }
+table.dag-tabel .dag-team { width: 100%; }
+table.dag-tabel tr.reserve .dag-team { color: var(--muted); font-style: italic; }
+
+/* Klassement zonder stijg-/daalpijltjes (1e vlucht) */
+ol.klassement.geen-delta li { grid-template-columns: 38px 1fr auto; }
+
 ul.lijst { list-style: none; margin: 0; padding: 0; }
 ul.lijst li {
   display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
