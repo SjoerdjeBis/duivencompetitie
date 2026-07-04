@@ -37,11 +37,13 @@
     const rijen = finishers.map(f => {
       const duif = f._duif || {};
       const heeftTeam = duif.teams && duif.teams.length;
-      const team = heeftTeam ? duif.teams.join(' · ') : (f.naam_override || '—');
+      const naam = duif.naam || f.naam_override || '—';
+      const main = el('td', { class: 'dag-main' }, el('span', { class: 'd-naam' }, naam));
+      if (heeftTeam) main.append(el('span', { class: 'v', html: '&nbsp; ' + duif.teams.join(' · ') }));
       const tr = el('tr', {},
         el('td', { class: 'dag-pos' }, String(f.positie)),
         el('td', { class: 'dag-ring' }, f.ring_kort ? ringChip(f.ring_kort) : '—'),
-        el('td', { class: 'dag-main' }, team),
+        main,
         el('td', { class: 'dag-pt' }, String(f._punten || 0), el('span', { class: 'pt' }, ' pt')));
       if (!heeftTeam) tr.classList.add('reserve');
       return tr;
@@ -51,7 +53,7 @@
       el('thead', {}, el('tr', {},
         el('th', { class: 'dag-pos' }, '#'),
         el('th', { class: 'dag-ring' }, 'Ringnr'),
-        el('th', { class: 'dag-main' }, 'Team'),
+        el('th', { class: 'dag-main' }, 'Duif'),
         el('th', { class: 'dag-pt' }, 'Punten'))),
       el('tbody', {}, rijen));
 
