@@ -130,13 +130,71 @@
       el('div', { class: 'tabel-scroll' }, tabel));
   }
 
+  /* ---------- 5) Teams (overzicht per team, alleen-lezen) ---------- */
+  function renderTeams(stand, model) {
+    const pv = Scoring.duivenPerVlucht(model);
+    const etappes = pv.vluchten;
+    const duiven = pv.duiven;
+    let teamVolgorde = stand.klassement.map(r => r.deelnemer);
+    if (!teamVolgorde.length) teamVolgorde = [...model.roster];
+
+    const wrap = el('div', {});
+    teamVolgorde.forEach(team => {
+      const eigen = duiven
+        .filter(d => d.teams.indexOf(team) >= 0)
+        .sort((a, b) => b.totaal - a.totaal || (a.naam || '').localeCompare(b.naam || '', 'nl'));
+      const teamTot = eigen.reduce((s, d) => s + d.totaal, 0);
+
+      const card = el('div', { class: 'card' },
+        el('h2', {},
+          el('span', {}, team),
+          el('span', { class: 'count' }, '· ' + eigen.length + (eigen.length === 1 ? ' duif' : ' duiven')),
+          el('span', { class: 'team-totaal' }, teamTot + ' pt')));
+
+      if (!eigen.length) {
+        card.append(el('div', { class: 'leeg' }, 'Nog geen duiven voor dit team.'));
+        wrap.append(card);
+        return;
+      }
+
+      const kopTr = el('tr', {},
+        el('th', { class: 'k-naam' }, 'Duif'),
+        el('th', { class: 'k-ring' }, 'Ringnummer'));
+      etappes.forEach((nr, i) => {
+        const th = el('th', { class: 'k-etappe' }, String(i + 1));
+        th.title = 'Etappe ' + (i + 1) + ' (vlucht ' + nr + ')';
+        kopTr.append(th);
+      });
+      kopTr.append(el('th', { class: 'k-totaal' }, 'Tot'));
+
+      const tbody = el('tbody', {});
+      eigen.forEach(d => {
+        const tr = el('tr', {},
+          el('td', { class: 'od-naam' + (d.naam ? '' : ' naamloos') }, d.naam || '(naamloos)'),
+          el('td', { class: 'od-ring' }, d.ring_lang || ''));
+        etappes.forEach(nr => {
+          const pts = d.perVlucht[nr] || 0;
+          tr.append(el('td', { class: 'od-etappe' + (pts ? '' : ' nul') }, pts ? String(pts) : ''));
+        });
+        tr.append(el('td', { class: 'od-totaal' }, String(d.totaal)));
+        tbody.append(tr);
+      });
+
+      const tabel = el('table', { class: 'overzicht-tabel' }, el('thead', {}, kopTr), tbody);
+      card.append(el('div', { class: 'tabel-scroll' }, tabel));
+      wrap.append(card);
+    });
+    return wrap;
+  }
+
   /* ---------- Tabbladen ---------- */
   function buildTabs(stand, model) {
     const defs = [
       { label: 'Duiven vandaag', build: () => renderDuivenVandaag(stand, model) },
       { label: 'Dagscore', build: () => renderDagscore(stand) },
       { label: 'Klassement', build: () => renderKlassement(stand) },
-      { label: 'Beste duiven', build: () => renderBesteDuiven(stand, model) }
+      { label: 'Beste duiven', build: () => renderBesteDuiven(stand, model) },
+      { label: 'Teams', build: () => renderTeams(stand, model) }
     ];
     const bar = el('div', { class: 'subtabs' });
     const panels = el('div', {});
