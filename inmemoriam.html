@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>In Memoriam — Duivencompetitie 2026</title>
+<link rel="icon" href="./assets/logo.png">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  :root{
+    --bg1:#251c12; --bg2:#16110b; --bg3:#0c0a07;
+    --ink:#f2e9d9; --muted:#a99d88; --gold:#e8ba52; --gold-soft:rgba(232,186,82,.14);
+    --line:rgba(232,186,82,.16);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans); color:var(--ink); line-height:1.5; overflow-x:hidden;
+    background:
+      radial-gradient(120% 70% at 50% -6%, #35281a 0%, var(--bg1) 26%, var(--bg2) 62%, var(--bg3) 100%);
+    background-attachment:fixed;
+  }
+  /* opstijgende sintels */
+  #sintels{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+  .sintel{position:absolute; bottom:-12px; width:4px; height:4px; border-radius:50%;
+    background:radial-gradient(circle,#ffd27a,#ff9a3a); opacity:0; animation:stijg linear infinite}
+  @keyframes stijg{
+    0%{transform:translateY(0) translateX(0); opacity:0}
+    12%{opacity:.9}
+    80%{opacity:.7}
+    100%{transform:translateY(-102vh) translateX(var(--dx,0)); opacity:0}
+  }
+
+  .wrap{position:relative; z-index:2; max-width:600px; margin:0 auto;
+    padding:34px 20px calc(46px + env(safe-area-inset-bottom))}
+
+  /* ---------- Kaars ---------- */
+  .kaars{position:relative; display:inline-flex; flex-direction:column; align-items:center}
+  .vlam{width:22px; height:34px; transform-origin:50% 88%; animation:flikker 2.4s ease-in-out infinite;
+    filter:drop-shadow(0 -2px 10px rgba(255,150,50,.75)) drop-shadow(0 -4px 26px rgba(255,120,20,.45))}
+  .kaars.mini .vlam{width:15px; height:23px}
+  @keyframes flikker{
+    0%,100%{transform:translateY(0) scale(1) rotate(0deg)}
+    20%{transform:translateY(-.5px) scale(1.03,.97) rotate(-1.5deg)}
+    45%{transform:translateY(0) scale(.97,1.04) rotate(1.5deg); opacity:.92}
+    70%{transform:translateY(-.5px) scale(1.02,.99) rotate(-.5deg)}
+  }
+  .kaars-body{width:26px; height:64px; margin-top:-3px; border-radius:7px 7px 4px 4px;
+    background:linear-gradient(90deg,#5a4a34,#efe2c6 30%,#fff8ec 46%,#e7d7b6 60%,#4f4130);
+    box-shadow:0 8px 26px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.35)}
+  .kaars-pool{width:120px; height:26px; margin-top:-8px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(255,175,70,.32), rgba(255,150,40,0)); }
+
+  /* ---------- Kop ---------- */
+  header.top{text-align:center; margin-bottom:30px}
+  .eyebrow{color:var(--gold); text-transform:uppercase; letter-spacing:.34em; font-size:.7rem;
+    font-weight:700; margin:14px 0 6px}
+  h1{font-family:var(--serif); font-size:2.9rem; line-height:1; margin:0 0 4px; letter-spacing:.01em}
+  .datum{color:var(--muted); font-size:.9rem; font-style:italic; margin-bottom:18px}
+  .intro{font-family:var(--serif); font-size:1.08rem; line-height:1.66; color:#e6dcc9;
+    max-width:44ch; margin:0 auto}
+  .telling{display:inline-block; margin-top:18px; color:var(--gold); font-weight:700;
+    font-size:.82rem; letter-spacing:.08em; border:1px solid var(--line); border-radius:999px;
+    padding:7px 16px; background:var(--gold-soft)}
+
+  .scheiding{display:flex; align-items:center; gap:14px; color:var(--line); margin:28px 4px 22px}
+  .scheiding::before,.scheiding::after{content:""; flex:1; height:1px;
+    background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .scheiding span{color:var(--muted); font-size:.72rem; letter-spacing:.2em; text-transform:uppercase}
+
+  /* ---------- Grafkaarten ---------- */
+  .graven{display:grid; gap:16px}
+  .grave{
+    position:relative; text-align:center; overflow:hidden;
+    background:linear-gradient(180deg, rgba(52,42,28,.66), rgba(24,18,11,.66));
+    border:1px solid var(--line); border-radius:20px; padding:24px 20px 22px;
+    box-shadow:0 16px 40px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,225,170,.07);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  .js .grave{opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.25,1)}
+  .js .grave.in{opacity:1; transform:none}
+  .grave::before{content:""; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:150px; height:80px; background:radial-gradient(closest-side, rgba(255,175,70,.16), transparent)}
+
+  .g-naam{font-family:var(--serif); font-size:1.7rem; line-height:1.15; margin:8px 0 4px}
+  .g-meta{color:var(--muted); font-size:.74rem; letter-spacing:.02em; font-variant-numeric:tabular-nums}
+  .g-team{display:inline-block; margin:12px 0 14px; font-size:.78rem; font-weight:700; color:var(--gold);
+    background:var(--gold-soft); border:1px solid var(--line); border-radius:999px; padding:4px 13px}
+  .g-graf{font-family:var(--serif); font-style:italic; font-size:1.06rem; line-height:1.62;
+    color:#ece2cf; margin:0 auto; max-width:40ch}
+  .g-graf::before{content:"“"; color:var(--gold); font-size:1.2em; line-height:0; margin-right:.05em}
+  .g-graf::after{content:"”"; color:var(--gold); font-size:1.2em; line-height:0; margin-left:.05em}
+
+  /* ---------- Slot ---------- */
+  footer.slot{text-align:center; margin-top:34px}
+  .slot .kaars{transform:scale(.85)}
+  .slot-tekst{font-family:var(--serif); font-size:1.12rem; color:#e6dcc9; margin:14px auto 6px; max-width:40ch}
+  .slot-onder{color:var(--muted); font-size:.76rem; letter-spacing:.1em; margin-top:14px}
+
+  @media (min-width:640px){ h1{font-size:3.4rem} .graven{gap:18px} }
+</style>
+</head>
+<body>
+  <div id="sintels"></div>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="kaars">
+        <svg class="vlam" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="fl" cx="50%" cy="72%" r="62%">
+              <stop offset="0%" stop-color="#fff7df"/><stop offset="42%" stop-color="#ffd166"/>
+              <stop offset="100%" stop-color="#ff7a18"/>
+            </radialGradient>
+          </defs>
+          <path d="M12 1 C 19 12, 22 19, 18 27 C 16 33, 8 33, 6 27 C 2.5 20, 8 13, 12 1 Z" fill="url(#fl)"/>
+          <path d="M12 13 C 15.5 18, 16 23, 13 28 C 12 31, 9 30.5, 9 26 C 9 21.5, 11 17, 12 13 Z" fill="#fff4c8" opacity=".92"/>
+        </svg>
+        <div class="kaars-body"></div>
+        <div class="kaars-pool"></div>
+      </div>
+      <div class="eyebrow">In Memoriam</div>
+      <h1>De Gevallen Vliegers</h1>
+      <div class="datum">niet teruggekeerd naar het hok · 13 juli 2026</div>
+      <p class="intro">
+        Op deze dag keerden veertien dappere duiven niet terug. Officieel zijn ze
+        <em>“nog onderweg”</em>. Realistisch gezien koersen ze inmiddels door de eeuwige
+        jachtvelden — kop in de wind, hok in de hemel. Wij gedenken hen met een kaarsje,
+        een glimlach, en een lichte twijfel of ze überhaupt de goede kant op vlogen.
+      </p>
+      <span class="telling" id="telling">🕊️ 14 zielen herdacht</span>
+    </header>
+
+    <div class="scheiding"><span>Zij die niet terugkwamen</span></div>
+
+    <main class="graven" id="graven"></main>
+
+    <footer class="slot">
+      <div class="kaars mini">
+        <svg class="vlam" viewBox="0 0 24 36" aria-hidden="true">
+          <path d="M12 1 C 19 12, 22 19, 18 27 C 16 33, 8 33, 6 27 C 2.5 20, 8 13, 12 1 Z" fill="url(#fl)"/>
+        </svg>
+        <div class="kaars-body" style="height:44px"></div>
+      </div>
+      <p class="slot-tekst">
+        Rust zacht, dappere vliegers. De korrelbak blijft gevuld, de klep blijft op een kier —
+        voor het geval iemand van jullie de weg terug tóch nog vindt.
+      </p>
+      <div class="slot-onder">Een Goed Stel Duifjes ✦ 13 juli 2026</div>
+    </footer>
+  </div>
+
+<script>
+  const DUIVEN = [
+    { naam:'Alberto Contador', team:'Maurice & Simone', ring:'26-8480326',
+      graf:'Beklom elke berg — behalve die ene, terug naar het hok. Ergens klimt hij nog, kop omlaag, benen als turbines, gestaag de verkeerde kant op.' },
+    { naam:'Rafael Nadal', team:'Maurice & Simone', ring:'26-8480337',
+      graf:'Gaf nooit een punt cadeau. Deze keer ook niet. Sloeg de bal het luchtruim in en ging hem persoonlijk halen. Wij wachten nog op de return.' },
+    { naam:'Ceesie', team:'Gilles & Tessa', ring:'26-8480333',
+      graf:'Klein, bescheiden, en nu spoorloos. Ceesie zei nooit veel, en vertrok precies zoals hij leefde: zonder één woord.' },
+    { naam:'Charlie', team:'Gilles & Tessa', ring:'26-8480301',
+      graf:'Waar Ceesie ging, ging Charlie. Tot het einde onafscheidelijk — samen weg, samen wijs. Of, eerlijker gezegd: samen hopeloos verdwaald.' },
+    { naam:'Ben de Pompoen', team:'Sjoerd & Marije', ring:'26-8480324',
+      graf:'Rolde waar anderen vlogen. Helaas rolde hij deze keer nét een heuvel te ver. Ergens ligt een pompoen geduldig te wachten op de herfst.' },
+    { naam:'Dodo', team:'Sjoerd & Marije', ring:'26-8480306',
+      graf:'Koeroe waarschuwde ons nog: de Dodo kán niet vliegen. De Dodo wist dat niet, probeerde het toch, en is nu officieel voor de tweede keer uitgestorven.' },
+    { naam:'Cebu', team:'Tom Aarsman', ring:'26-8409163',
+      graf:'Vertrok richting de Filipijnen en nam de scenic route. Laatst gezien bij een strandbar op Boracay. Komt terug zodra de cocktails op zijn.' },
+    { naam:'Duif 1', team:'Marco & Kelsey', ring:'26-8480308',
+      graf:'Ging heen vóór hij ooit een echte naam kreeg. Hier rust Duif 1 — de leukere naam volgt, naar goede gewoonte, postuum.' },
+    { naam:'Marie', team:'Hugo & Marieke', ring:'26-8409166',
+      graf:'Elegant tot de laatste veer. Marie vertrok niet, Marie maakte simpelweg elders haar entree. Wij gunnen haar het applaus.' },
+    { naam:'Mees de Mus', team:'Arjan Koenen', ring:'26-8480311',
+      graf:'Was nooit een duif, en dat wist iedereen. Vloog weg als de mus die hij altijd al was. Rust zacht, klein bedriegertje.' },
+    { naam:'Milow V/D Bandijk', team:'Paul & Nicolette', ring:'26-8480304',
+      graf:'De dijk brak tóch. Milow verliet de dynastie en liet Max en Moos verweesd achter aan de waterkant. Adel verplicht — maar blijkbaar niet tot terugkomen.' },
+    { naam:'Moffel', team:'Lois & Wessel', ring:'26-8409102',
+      graf:'Kwam altijd aan wanneer het hém uitkwam. Deze keer kwam het hem niet uit. Neemt vast de lange route — met, zoals altijd, een goed verhaal.' },
+    { naam:'Simo Häyhä', team:'Jan & Monique', ring:'26-8480303',
+      graf:'De geruisloze scherpschutter. Maakte geen geluid, liet geen sporen na, en verdween precies zoals hij leefde: volstrekt onvindbaar. Missie volbracht.' },
+    { naam:'Teun', team:'Jo & Monique', ring:'26-8480344',
+      graf:'De onmisbare. Bleek, na rijp beraad, tóch misbaar. Het gezin is er kapot van; de tegenstand is opgelucht.' }
+  ];
+
+  const graven = document.getElementById('graven');
+  DUIVEN.forEach(d => {
+    const art = document.createElement('article');
+    art.className = 'grave';
+    art.innerHTML =
+      '<div class="kaars mini" aria-hidden="true">' +
+        '<svg class="vlam" viewBox="0 0 24 36">' +
+          '<path d="M12 1 C 19 12, 22 19, 18 27 C 16 33, 8 33, 6 27 C 2.5 20, 8 13, 12 1 Z" fill="url(#fl)"/>' +
+        '</svg></div>' +
+      '<h2 class="g-naam">' + d.naam + '</h2>' +
+      '<div class="g-meta">Ring ' + d.ring + ' · voorjaar 2026 – 13 juli 2026</div>' +
+      '<div class="g-team">' + d.team + '</div>' +
+      '<p class="g-graf">' + d.graf + '</p>';
+    graven.append(art);
+  });
+  document.getElementById('telling').textContent = '🕊️ ' + DUIVEN.length + ' zielen herdacht';
+
+  // Scroll-onthulling
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.grave').forEach(g => io.observe(g));
+  } else {
+    document.querySelectorAll('.grave').forEach(g => g.classList.add('in'));
+  }
+
+  // Opstijgende sintels
+  (function sintels(){
+    const laag = document.getElementById('sintels');
+    const N = 26;
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('span');
+      s.className = 'sintel';
+      const size = (2 + Math.random() * 3).toFixed(1);
+      s.style.width = size + 'px'; s.style.height = size + 'px';
+      s.style.left = (Math.random() * 100).toFixed(2) + '%';
+      s.style.setProperty('--dx', (Math.random() * 60 - 30).toFixed(0) + 'px');
+      s.style.animationDuration = (7 + Math.random() * 9).toFixed(1) + 's';
+      s.style.animationDelay = (-Math.random() * 12).toFixed(1) + 's';
+      laag.append(s);
+    }
+  })();
+</script>
+</body>
+</html>
