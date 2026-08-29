@@ -9,6 +9,61 @@
   const $ = id => document.getElementById(id);
   let MODEL = null;
 
+  // Concept lokaal bewaren, zodat per ongeluk wegklikken je invoer niet wist.
+  const CONCEPT_SLEUTEL = 'duiven_invoer_concept_v1';
+
+  /** Bewaart de huidige invoer in de browser (localStorage). */
+  function bewaarConcept() {
+    try {
+      const rijen = [...document.querySelectorAll('.pos-rij')]
+        .map(r => ({
+          pos: Number(r.dataset.pos),
+          value: r.querySelector('input').value,
+          override: r.dataset.override || ''
+        }))
+        .filter(r => r.value || r.override);
+      const vlucht = $('vlucht').value;
+      if (!rijen.length && !vlucht) { localStorage.removeItem(CONCEPT_SLEUTEL); return; }
+      localStorage.setItem(CONCEPT_SLEUTEL, JSON.stringify({ vlucht, rijen, ts: Date.now() }));
+    } catch (e) { /* localStorage niet beschikbaar — stil negeren */ }
+  }
+
+  /** Wist het bewaarde concept. */
+  function wisConcept() {
+    try { localStorage.removeItem(CONCEPT_SLEUTEL); } catch (e) {}
+  }
+
+  /** Herstelt een eerder bewaard concept in de al opgebouwde rijen. */
+  function herstelConcept() {
+    let data;
+    try {
+      const raw = localStorage.getItem(CONCEPT_SLEUTEL);
+      if (!raw) return;
+      data = JSON.parse(raw);
+    } catch (e) { return; }
+    if (!data || !data.rijen || !data.rijen.length) return;
+
+    if (data.vlucht) $('vlucht').value = data.vlucht;
+    data.rijen.forEach(saved => {
+      const rij = document.querySelector('.pos-rij[data-pos="' + saved.pos + '"]');
+      if (!rij) return;
+      const inp = rij.querySelector('input');
+      inp.value = saved.value || '';
+      resolveer(rij);
+      // Handmatige keuze/naam (botsing of onbekend ringnummer) terugzetten.
+      if (saved.override) {
+        rij.dataset.override = saved.override;
+        const sub = rij.querySelector('.resolved select, .resolved input');
+        if (sub) sub.value = saved.override;
+      }
+    });
+    checkDuplicaten();
+
+    const tijd = data.ts ? new Date(data.ts).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
+    toonMelding('ok', '↩︎ Je eerdere invoer is hersteld' + (tijd ? ' (bewaard om ' + tijd + ')' : '') +
+      '. Klik op <strong>Leegmaken</strong> om opnieuw te beginnen.');
+  }
+
   /** Normaliseert getypte invoer naar een 3-cijferige korte code ("85" -> "085"). */
   function normCode(v) {
     const d = (v || '').replace(/\D/g, '').slice(-3);
@@ -35,7 +90,7 @@
     const res = document.createElement('div');
     res.className = 'resolved empty';
 
-    inp.addEventListener('input', () => { resolveer(rij); checkDuplicaten(); });
+    inp.addEventListener('input', () => { resolveer(rij); checkDuplicaten(); bewaarConcept(); });
     // Enter springt naar de volgende plek.
     inp.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
@@ -76,7 +131,7 @@
       const sel = document.createElement('select');
       sel.append(new Option('Kies welke duif…', ''));
       treffers.forEach(d => sel.append(new Option(d.naam + '  (' + d.ring_lang + ')', d.naam)));
-      sel.addEventListener('change', () => { rij.dataset.override = sel.value; });
+      sel.addEventListener('change', () => { rij.dataset.override = sel.value; bewaarConcept(); });
       res.append(document.createTextNode('Twee duiven op ' + code + ': '));
       res.append(sel);
     } else {
@@ -86,7 +141,7 @@
       const naam = document.createElement('input');
       naam.type = 'text'; naam.placeholder = 'naam (optioneel)';
       naam.style.cssText = 'font-size:.85rem;padding:4px 8px;width:160px;text-align:left;letter-spacing:normal';
-      naam.addEventListener('input', () => { rij.dataset.override = naam.value.trim(); });
+      naam.addEventListener('input', () => { rij.dataset.override = naam.value.trim(); bewaarConcept(); });
       res.append(naam);
     }
   }
@@ -138,6 +193,7 @@
       toonMelding('ok', '✓ Vlucht ' + vlucht + ' opgeslagen' + extra + '! Bekijk de ' +
         '<a href="./tussenstandopen.html" target="_blank" rel="noopener">tussenstand</a>.');
       if ($('overschrijf')) $('overschrijf').checked = false;
+      wisConcept();
     } catch (err) {
       toonMelding('fout', 'Opslaan mislukt: ' + err.message);
     } finally {
@@ -150,6 +206,7 @@
     document.querySelectorAll('.pos-rij').forEach(r => { delete r.dataset.code; delete r.dataset.override; resolveer(r); });
     checkDuplicaten();
     $('melding').innerHTML = '';
+    wisConcept();
   }
 
   async function init() {
@@ -176,6 +233,10 @@
 
       $('verzend').addEventListener('click', verzend);
       $('wis').addEventListener('click', wis);
+      $('vlucht').addEventListener('input', bewaarConcept);
+
+      // Eerder (per ongeluk) verlaten invoer terugzetten.
+      herstelConcept();
     } catch (err) {
       banner.className = 'banner';
       toonMelding('fout', 'Kon de duivenlijst niet laden: ' + err.message);
