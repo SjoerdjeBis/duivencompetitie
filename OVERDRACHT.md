@@ -28,7 +28,7 @@ Browser ──► GitHub Pages (deze site) ──► Apps Script Web App ──�
 - **Frontend:** plain HTML/CSS/JS, geen build-stap. Draait op GitHub Pages.
 - **API:** een Google Apps Script Web App (gratis lijm), gedeployd als "Iedereen".
 - **Database:** een Google Sheet met 4 tabbladen. Bron van waarheid.
-- **Toegang:** helemaal open (geen wachtwoord). Sheet-versiegeschiedenis = vangnet.
+- **Toegang:** lezen is open; opslaan vereist de beheercode (Scripteigenschap `BEHEER_CODE`, eenmalig gevraagd en bewaard in de browser). Sheet-versiegeschiedenis = extra vangnet.
 
 ## 3. Belangrijke links & ID's
 

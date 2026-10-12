@@ -45,16 +45,33 @@
     return { model: Scoring.buildModel(raw), live: false };
   }
 
-  /** Stuurt een JSON-payload via POST naar de Apps Script Web App. */
-  async function postJSON(payload) {
-    if (!isLive()) throw new Error('Opslaan kan alleen in live-modus (stel API_URL in config.js in).');
+  // De beheercode (BEHEER_CODE in Apps Script) wordt eenmalig gevraagd en in deze
+  // browser bewaard. Bij een onjuiste code vraagt de site opnieuw.
+  const CODE_KEY = 'duiven-beheercode';
+  function getCode() { try { return localStorage.getItem(CODE_KEY) || ''; } catch (e) { return ''; } }
+  function setCode(v) { try { v ? localStorage.setItem(CODE_KEY, v) : localStorage.removeItem(CODE_KEY); } catch (e) {} }
+
+  async function postOnce(payload) {
     const res = await fetch(cfg().API_URL, {
       method: 'POST',
       // text/plain voorkomt een CORS-preflight die Apps Script niet kan beantwoorden.
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(Object.assign({}, payload, { code: getCode() }))
     });
     const data = await res.json().catch(() => ({ ok: false, error: 'Onleesbaar antwoord van server' }));
+    return { res, data };
+  }
+
+  /** Stuurt een JSON-payload via POST naar de Apps Script Web App. */
+  async function postJSON(payload) {
+    if (!isLive()) throw new Error('Opslaan kan alleen in live-modus (stel API_URL in config.js in).');
+    if (!getCode()) setCode((global.prompt('Beheercode om op te slaan:') || '').trim());
+    let { res, data } = await postOnce(payload);
+    if (data.auth && data.error === 'Beheercode onjuist.') {
+      setCode((global.prompt('Beheercode onjuist. Probeer opnieuw:') || '').trim());
+      ({ res, data } = await postOnce(payload));
+      if (data.auth) setCode('');
+    }
     if (!res.ok || data.ok === false) throw new Error(data.error || ('HTTP ' + res.status));
     return data;
   }

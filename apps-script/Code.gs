@@ -19,6 +19,11 @@
  *
  * CORS-noot: de site doet GET (werkt direct) en POST met Content-Type text/plain
  * (vermijdt een preflight die Apps Script niet kan beantwoorden); de body is JSON-tekst.
+ *
+ * Beveiliging: elke POST moet de beheercode meesturen (payload.code). Stel die in via
+ * Projectinstellingen (tandwiel) → Scripteigenschappen → eigenschap BEHEER_CODE.
+ * Zonder ingestelde BEHEER_CODE weigert het script alle schrijfacties. Lezen (GET)
+ * blijft open, want de site toont die data toch al.
  */
 
 var TAB = {
@@ -95,6 +100,15 @@ function doPost(e) {
   try {
     lock.waitLock(20000); // voorkom dat twee mensen tegelijk schrijven
     var payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    var verwacht = PropertiesService.getScriptProperties().getProperty('BEHEER_CODE');
+    if (!verwacht) {
+      return jsonOut({ ok: false, auth: true,
+        error: 'Opslaan staat uit: stel eerst BEHEER_CODE in bij de Scripteigenschappen.' });
+    }
+    if (String(payload.code || '') !== verwacht) {
+      return jsonOut({ ok: false, auth: true, error: 'Beheercode onjuist.' });
+    }
+    delete payload.code;
     if (payload.action === 'setupSeizoen') return setupSeizoen(payload);
     if (payload.action === 'kiesDuif') return kiesDuif(payload);
     if (payload.action === 'hernoemDuif') return hernoemDuif(payload);
