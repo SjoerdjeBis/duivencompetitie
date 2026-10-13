@@ -1,0 +1,387 @@
+{
+  "seizoen": "2026",
+  "etappes": 11,
+  "klassement": [
+    {
+      "rang": 1,
+      "deelnemer": "Rick & Ezra",
+      "totaal": 574
+    },
+    {
+      "rang": 2,
+      "deelnemer": "Bart & Lobke",
+      "totaal": 531
+    },
+    {
+      "rang": 3,
+      "deelnemer": "Eddy & Jolanda",
+      "totaal": 492
+    },
+    {
+      "rang": 4,
+      "deelnemer": "Tom Aarsman",
+      "totaal": 377
+    },
+    {
+      "rang": 5,
+      "deelnemer": "Hugo & Marieke",
+      "totaal": 346
+    },
+    {
+      "rang": 6,
+      "deelnemer": "Niek & Wiet",
+      "totaal": 336
+    },
+    {
+      "rang": 7,
+      "deelnemer": "Paul & Nicolette",
+      "totaal": 332
+    },
+    {
+      "rang": 8,
+      "deelnemer": "Jo & Monique",
+      "totaal": 309
+    },
+    {
+      "rang": 9,
+      "deelnemer": "Tim & Kim",
+      "totaal": 290
+    },
+    {
+      "rang": 10,
+      "deelnemer": "Arjan Koenen",
+      "totaal": 277
+    },
+    {
+      "rang": 11,
+      "deelnemer": "Sjoerd & Marije",
+      "totaal": 249
+    },
+    {
+      "rang": 12,
+      "deelnemer": "Niene & Aron",
+      "totaal": 216
+    },
+    {
+      "rang": 13,
+      "deelnemer": "Jan & Monique",
+      "totaal": 198
+    },
+    {
+      "rang": 14,
+      "deelnemer": "Marco & Kelsey",
+      "totaal": 169
+    },
+    {
+      "rang": 15,
+      "deelnemer": "Maurice & Simone",
+      "totaal": 140
+    },
+    {
+      "rang": 16,
+      "deelnemer": "Lois & Wessel",
+      "totaal": 131
+    },
+    {
+      "rang": 17,
+      "deelnemer": "Gilles & Tessa",
+      "totaal": 113
+    }
+  ],
+  "besteDuiven": [
+    {
+      "naam": "Rio",
+      "teams": [
+        "Bart & Lobke"
+      ],
+      "totaal": 300
+    },
+    {
+      "naam": "SixSeven",
+      "teams": [
+        "Sjoerd & Marije"
+      ],
+      "totaal": 249
+    },
+    {
+      "naam": "Die daar",
+      "teams": [
+        "Rick & Ezra"
+      ],
+      "totaal": 239
+    },
+    {
+      "naam": "Manila",
+      "teams": [
+        "Tom Aarsman"
+      ],
+      "totaal": 239
+    },
+    {
+      "naam": "Ach, ik kom er zo op",
+      "teams": [
+        "Rick & Ezra"
+      ],
+      "totaal": 215
+    },
+    {
+      "naam": "Tompouce",
+      "teams": [
+        "Eddy & Jolanda"
+      ],
+      "totaal": 212
+    },
+    {
+      "naam": "Emma",
+      "teams": [
+        "Hugo & Marieke"
+      ],
+      "totaal": 196
+    },
+    {
+      "naam": "Mbappé",
+      "teams": [
+        "Bart & Lobke"
+      ],
+      "totaal": 184
+    },
+    {
+      "naam": "Moos V/D Bandijk",
+      "teams": [
+        "Paul & Nicolette"
+      ],
+      "totaal": 180
+    },
+    {
+      "naam": "Eowyn",
+      "teams": [
+        "Arjan Koenen"
+      ],
+      "totaal": 174
+    },
+    {
+      "naam": "Dumfel Demfries",
+      "teams": [
+        "Niene & Aron"
+      ],
+      "totaal": 172
+    },
+    {
+      "naam": "Dewey",
+      "teams": [
+        "Marco & Kelsey"
+      ],
+      "totaal": 169
+    },
+    {
+      "naam": "Big Virg",
+      "teams": [
+        "Niek & Wiet"
+      ],
+      "totaal": 153
+    },
+    {
+      "naam": "Bosse Bol",
+      "teams": [
+        "Eddy & Jolanda"
+      ],
+      "totaal": 153
+    },
+    {
+      "naam": "Max V/D Bandijk",
+      "teams": [
+        "Paul & Nicolette"
+      ],
+      "totaal": 147
+    },
+    {
+      "naam": "Michael Schumacher",
+      "teams": [
+        "Maurice & Simone"
+      ],
+      "totaal": 140
+    },
+    {
+      "naam": "Senna",
+      "teams": [
+        "Tim & Kim"
+      ],
+      "totaal": 136
+    },
+    {
+      "naam": "Aline",
+      "teams": [
+        "Hugo & Marieke"
+      ],
+      "totaal": 134
+    },
+    {
+      "naam": "Amy",
+      "teams": [
+        "Jo & Monique"
+      ],
+      "totaal": 133
+    },
+    {
+      "naam": "Elio",
+      "teams": [
+        "Jo & Monique"
+      ],
+      "totaal": 131
+    },
+    {
+      "naam": "Bokkepoot",
+      "teams": [
+        "Eddy & Jolanda"
+      ],
+      "totaal": 127
+    },
+    {
+      "naam": "Jaap",
+      "teams": [
+        "Niek & Wiet"
+      ],
+      "totaal": 125
+    },
+    {
+      "naam": "Armando 2",
+      "teams": [
+        "Jan & Monique"
+      ],
+      "totaal": 120
+    },
+    {
+      "naam": "Dinges",
+      "teams": [
+        "Rick & Ezra"
+      ],
+      "totaal": 120
+    },
+    {
+      "naam": "Boracay",
+      "teams": [
+        "Tom Aarsman"
+      ],
+      "totaal": 114
+    },
+    {
+      "naam": "Framboos",
+      "teams": [
+        "Tim & Kim"
+      ],
+      "totaal": 114
+    },
+    {
+      "naam": "Frenkie",
+      "teams": [
+        "Arjan Koenen"
+      ],
+      "totaal": 102
+    },
+    {
+      "naam": "Geertje",
+      "teams": [
+        "Lois & Wessel"
+      ],
+      "totaal": 89
+    },
+    {
+      "naam": "Gunnar Sønsteby",
+      "teams": [
+        "Jan & Monique"
+      ],
+      "totaal": 78
+    },
+    {
+      "naam": "Charlie",
+      "teams": [
+        "Gilles & Tessa"
+      ],
+      "totaal": 77
+    },
+    {
+      "naam": "Torx",
+      "teams": [
+        "Niek & Wiet"
+      ],
+      "totaal": 58
+    },
+    {
+      "naam": "Cabo!!",
+      "teams": [
+        "Bart & Lobke"
+      ],
+      "totaal": 47
+    },
+    {
+      "naam": "Teun",
+      "teams": [
+        "Jo & Monique"
+      ],
+      "totaal": 45
+    },
+    {
+      "naam": "Roekoeman",
+      "teams": [
+        "Niene & Aron"
+      ],
+      "totaal": 44
+    },
+    {
+      "naam": "Piertje",
+      "teams": [
+        "Lois & Wessel"
+      ],
+      "totaal": 42
+    },
+    {
+      "naam": "Kiwi",
+      "teams": [
+        "Tim & Kim"
+      ],
+      "totaal": 40
+    },
+    {
+      "naam": "Cebu",
+      "teams": [
+        "Tom Aarsman"
+      ],
+      "totaal": 24
+    },
+    {
+      "naam": "Sep",
+      "teams": [
+        "Gilles & Tessa"
+      ],
+      "totaal": 21
+    },
+    {
+      "naam": "Marie",
+      "teams": [
+        "Hugo & Marieke"
+      ],
+      "totaal": 16
+    },
+    {
+      "naam": "Ceesie",
+      "teams": [
+        "Gilles & Tessa"
+      ],
+      "totaal": 15
+    },
+    {
+      "naam": "Milow V/D Bandijk",
+      "teams": [
+        "Paul & Nicolette"
+      ],
+      "totaal": 5
+    },
+    {
+      "naam": "Mees de Mus",
+      "teams": [
+        "Arjan Koenen"
+      ],
+      "totaal": 1
+    }
+  ]
+}
