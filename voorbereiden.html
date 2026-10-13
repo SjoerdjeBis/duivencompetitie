@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Seizoen voorbereiden — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./assets/styles.css?v=4">
+  <link rel="stylesheet" href="./assets/styles.css?v=6">
 </head>
-<body>
+<body data-beheer>
   <div class="wrap">
     <header class="app">
       <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
@@ -26,116 +26,190 @@
     </header>
 
     <div id="banner"></div>
+    <div id="laad-fout"></div>
 
-    <p class="sub" style="margin:0 0 18px">
-      Zet aan het begin van het seizoen de <strong>deelnemers</strong> en de
-      <strong>duiven</strong> klaar. De duiven krijgen later — op het keuzemoment —
-      pas een eigenaar en een naam.
+    <p class="sub intro">
+      Werk de stappen van boven naar beneden af. Een groen vinkje betekent: klaar.
+      Een stap die nog niet aan de beurt is, staat grijs.
     </p>
+    <div id="stand" class="stand"></div>
 
-    <!-- ===== Deelnemers ===== -->
-    <div class="card">
-      <h2>Deelnemers <span class="count" id="deelnemers-telling"></span></h2>
-      <p class="sub" style="margin:-6px 0 14px">
-        Vink aan wie dit jaar meedoet. Een naam aanpassen mag (naamswijziging),
-        en onderaan voeg je nieuwe deelnemers toe.
-      </p>
-      <div id="deelnemers-lijst" class="deelnemers-lijst"></div>
-      <div class="knoppen" style="margin-top:12px">
-        <button id="deelnemer-toevoegen" class="ghost" type="button">+ Nieuwe deelnemer</button>
+    <!-- ================= A · Seizoen afsluiten ================= -->
+    <h2 class="fase" id="fase-a-titel">A · Seizoen afsluiten</h2>
+
+    <!-- Al afgesloten: compacte samenvatting i.p.v. stap 1 en 2 -->
+    <div id="afgesloten" class="card stap verborgen" data-status="klaar">
+      <div class="stap-kop">
+        <span class="stap-nr">&#10003;</span>
+        <h3 id="afgesloten-titel">Vorig seizoen is afgesloten</h3>
       </div>
+      <p class="sub" id="afgesloten-tekst"></p>
     </div>
 
-    <!-- ===== Duiven ===== -->
-    <div class="card">
-      <h2>Duiven <span class="count" id="duiven-telling"></span></h2>
-      <p class="sub" style="margin:-6px 0 12px">
-        Plak hier de <strong>lange ringnummers</strong> — één per regel (of gescheiden
-        door spaties/komma's). Ik maak er automatisch de korte code (laatste 3 cijfers)
-        van.
-      </p>
-      <textarea id="ringnummers" class="ringinvoer" rows="7"
-        placeholder="1102789&#10;1102851&#10;1102781&#10;…" autocomplete="off" spellcheck="false"></textarea>
-      <div id="duiven-preview" class="duiven-preview"></div>
-      <div id="duiven-waarschuwing"></div>
-    </div>
-
-    <!-- ===== Keuzemoment-instelling ===== -->
-    <div class="card">
-      <h2>Keuzemoment</h2>
-      <p class="sub" style="margin:-6px 0 12px">
-        Hoeveel duiven kiest elk team? Dit richtgetal zie je terug op de
-        keuzepagina van elk team (ze kunnen er tijdens het kiezen alsnog eentje
-        minder of meer nemen).
-      </p>
-      <div class="reset-blok" style="border-top:0; padding-top:0; margin-top:0">
-        <div class="veld" style="margin:0">
-          <label for="duiven-per-team">Aantal duiven per team</label>
-          <input id="duiven-per-team" type="number" min="1" max="50" style="width:90px">
+    <!-- Stap 1 -->
+    <section class="card stap" id="stap1">
+      <div class="stap-kop">
+        <span class="stap-nr">1</span>
+        <h3>Archiveer dit seizoen</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="stap-body">
+        <p class="sub">
+          Maakt een volledige kopie van de Google Sheet (alle uitslagen, duiven en
+          teams) in je Google Drive, met de naam
+          <em id="archief-naam">Duivencompetitie … - ARCHIEF</em>. Aan de huidige
+          gegevens verandert niets.
+        </p>
+        <div id="archief-link"></div>
+        <div class="knoppen">
+          <button id="archiveer" class="primary" type="button">Archiveer dit seizoen</button>
         </div>
-        <button id="instelling-opslaan" class="primary" type="button">Aantal opslaan</button>
+        <details class="eigen-kopie">
+          <summary>Zelf al een kopie gemaakt? Leg de link vast</summary>
+          <div class="eigen-kopie-rij">
+            <input id="archief-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/…">
+            <button id="archief-url-opslaan" class="ghost" type="button">Link vastleggen</button>
+          </div>
+        </details>
+        <div id="melding1"></div>
       </div>
-      <div id="instelling-melding"></div>
-    </div>
+    </section>
 
-    <!-- ===== Opslaan & beheer ===== -->
-    <div class="card">
-      <h2>Opslaan &amp; beheer</h2>
-      <div id="melding"></div>
+    <!-- Stap 2 -->
+    <section class="card stap" id="stap2">
+      <div class="stap-kop">
+        <span class="stap-nr">2</span>
+        <h3>Leeg de database &mdash; bewaar de teamnamen</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="wacht-tekst">Kan pas als het seizoen gearchiveerd is (stap 1).</div>
+      <div class="stap-body">
+        <ul class="effect-lijst" id="leeg-effect"></ul>
+        <div class="knoppen">
+          <label class="getal-label" for="nieuw-seizoen">Nieuw seizoen</label>
+          <input id="nieuw-seizoen" class="getal-input" type="number" min="2000" max="2100">
+          <button id="leeg" class="primary gevaar-vol" type="button">Leeg de database</button>
+        </div>
+        <div id="melding2"></div>
+      </div>
+    </section>
 
-      <!-- Actie 1: nieuw seizoen opslaan -->
+    <!-- ================= B · Nieuw seizoen klaarzetten ================= -->
+    <h2 class="fase" id="fase-b-titel">B · Nieuw seizoen klaarzetten</h2>
+
+    <!-- Stap 3 -->
+    <section class="card stap" id="stap3">
+      <div class="stap-kop">
+        <span class="stap-nr">3</span>
+        <h3>Duifnummers invullen</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="wacht-tekst">Eerst het oude seizoen afsluiten (stap 1 en 2).</div>
+      <div class="stap-body">
+        <p class="sub">
+          Plak de <strong>lange ringnummers</strong> &mdash; één per regel (of gescheiden door
+          spaties/komma's). De korte code (laatste 3 cijfers) maak ik er zelf van.
+          Later nog een duif erbij of eraf? Pas de lijst aan en sla opnieuw op:
+          duiven die al een team hebben, houden hun naam en team.
+        </p>
+        <textarea id="ringnummers" class="ringinvoer" rows="7"
+          placeholder="27-1102789&#10;27-1102851&#10;27-1102781&#10;…" autocomplete="off" spellcheck="false"></textarea>
+        <div id="duiven-preview" class="duiven-preview"></div>
+        <div id="duiven-waarschuwing"></div>
+        <div class="knoppen">
+          <button id="duiven-opslaan" class="primary" type="button">Duiven opslaan</button>
+          <span class="knop-info" id="duiven-telling"></span>
+        </div>
+        <div id="melding3"></div>
+      </div>
+    </section>
+
+    <!-- Stap 4 -->
+    <section class="card stap" id="stap4">
+      <div class="stap-kop">
+        <span class="stap-nr">4</span>
+        <h3>Teamnamen actualiseren</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="wacht-tekst">Eerst het oude seizoen afsluiten (stap 1 en 2).</div>
+      <div class="stap-body">
+        <p class="sub">
+          De teams van vorig jaar staan klaar. Vinkje uit = doet niet meer mee.
+          Een naam aanpassen mag (een naamswijziging gaat ook mee naar de duiven
+          van dat team). Onderaan voeg je nieuwe teams toe.
+        </p>
+        <div id="deelnemers-lijst" class="deelnemers-lijst"></div>
+        <div class="knoppen">
+          <button id="deelnemer-toevoegen" class="ghost" type="button">+ Nieuw team</button>
+          <button id="deelnemers-opslaan" class="primary" type="button">Teams opslaan</button>
+          <span class="knop-info" id="deelnemers-telling"></span>
+        </div>
+        <div id="melding4"></div>
+      </div>
+    </section>
+
+    <!-- Stap 5 -->
+    <section class="card stap" id="stap5">
+      <div class="stap-kop">
+        <span class="stap-nr">5</span>
+        <h3>Aantal duiven per team</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="wacht-tekst">Eerst het oude seizoen afsluiten (stap 1 en 2).</div>
+      <div class="stap-body">
+        <p class="sub">
+          Het maximum dat elk team op het keuzemoment mag kiezen (eerder stoppen mag).
+        </p>
+        <div class="knoppen">
+          <input id="duiven-per-team" class="getal-input" type="number" min="1" max="50">
+          <button id="instelling-opslaan" class="primary" type="button">Aantal opslaan</button>
+        </div>
+        <div id="rekensom"></div>
+        <div id="melding5"></div>
+      </div>
+    </section>
+
+    <!-- Stap 6 -->
+    <section class="card stap" id="stap6">
+      <div class="stap-kop">
+        <span class="stap-nr">6</span>
+        <h3>Keuzemoment</h3>
+        <span class="stap-status"></span>
+      </div>
+      <div class="wacht-tekst">Eerst duiven (stap 3) en teams (stap 4) klaarzetten.</div>
+      <div class="stap-body">
+        <p class="sub">
+          Elk team krijgt een eigen link en kiest daar zijn duiven (zelf of willekeurig)
+          en geeft ze een naam.
+        </p>
+        <div class="knoppen">
+          <a id="naar-keuzemoment" class="knop-link" href="./keuzemoment.html">Naar het keuzemoment &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Noodknoppen ================= -->
+    <details class="card noodknoppen">
+      <summary>Noodknoppen</summary>
       <div class="actie-rij">
         <div class="actie-tekst">
-          <strong>Seizoen opslaan</strong>
-          <p class="sub">
-            Start een nieuw seizoen: <strong>vervangt</strong> de deelnemers en duiven
-            door de lijsten hierboven. De oude duiven verdwijnen; de nieuwe beginnen
-            zonder team en naam — die komen op het keuzemoment.
-          </p>
-          <label class="wis-optie">
-            <input type="checkbox" id="wis-uitslagen">
-            Ook de uitslagen van vorig seizoen wissen — zet de tussenstand terug op 0.
-          </label>
-          <p class="sub tip">
-            💡 Maak vooraf via <em>Bestand → Een kopie maken</em> een kopie van de
-            Google Sheet, als archief van vorig seizoen.
-          </p>
-        </div>
-        <button id="opslaan" class="primary" type="button">Seizoen opslaan</button>
-      </div>
-
-      <!-- Actie 2: duiven resetten -->
-      <div class="actie-rij">
-        <div class="actie-tekst">
-          <strong>Duiven van dit seizoen resetten</strong>
+          <strong>Keuzemoment overdoen</strong>
           <p class="sub">
             Maakt alle duiven weer <strong>teamloos en naamloos</strong> (zelfde
-            ringnummers), zodat je het keuzemoment opnieuw kunt doen. Deelnemers en
-            uitslagen blijven staan.
+            ringnummers). Teams en uitslagen blijven staan.
           </p>
         </div>
         <button id="reset-duiven" class="ghost gevaar" type="button">Duiven resetten</button>
       </div>
+      <div id="melding-nood"></div>
+    </details>
 
-      <!-- Alleen in demo-modus: handmatig kopiëren naar de Sheet -->
-      <div id="demo-kopie" class="demo-kopie" style="display:none">
-        <p class="sub" style="margin:0 0 10px">
-          Demo-modus · rechtstreeks opslaan kan niet. Kopieer de lijsten en plak ze in
-          de tabbladen <code>Deelnemers</code> en <code>Duivendatabase</code>:
-        </p>
-        <div class="knoppen" style="margin-top:0">
-          <button id="kopieer-deelnemers" class="ghost" type="button">Kopieer deelnemers</button>
-          <button id="kopieer-duiven" class="ghost" type="button">Kopieer duiven</button>
-        </div>
-      </div>
-    </div>
-
-    <footer class="app">Een Goed Stel Duifjes ✦</footer>
+    <footer class="app">Een Goed Stel Duifjes &#10022;</footer>
   </div>
 
-  <script src="./config.js?v=4"></script>
-  <script src="./assets/scoring.js?v=4"></script>
-  <script src="./assets/api.js?v=5"></script>
-  <script src="./assets/voorbereiden.js?v=4"></script>
+  <script src="./config.js?v=6"></script>
+  <script src="./assets/scoring.js?v=6"></script>
+  <script src="./assets/api.js?v=6"></script>
+  <script src="./assets/voorbereiden.js?v=6"></script>
 </body>
 </html>

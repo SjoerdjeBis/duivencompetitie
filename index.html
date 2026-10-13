@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Beheer — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./assets/styles.css?v=4">
+  <link rel="stylesheet" href="./assets/styles.css?v=6">
 </head>
-<body>
+<body data-beheer>
   <div class="wrap">
     <header class="app">
       <div class="logo"><img src="./assets/logo.png" alt="Een goed stel duifjes"></div>
@@ -32,7 +32,7 @@
         openbaar en opent in een nieuw venster.
       </p>
       <div class="beheer-tegels">
-        <a href="./voorbereiden.html">Voorbereiden<span>Seizoen &amp; duiven klaarzetten</span></a>
+        <a href="./voorbereiden.html">Voorbereiden<span>Seizoen afsluiten &amp; nieuw seizoen klaarzetten</span></a>
         <a href="./keuzemoment.html">Keuzemoment<span>Keuzelinks per team</span></a>
         <a href="./deelnemers.html">Deelnemers<span>Duiven per team</span></a>
         <a href="./duivenlijst.html">Overzicht duiven<span>Alle duiven, sorteerbaar</span></a>
@@ -44,10 +44,13 @@
     <footer class="app">Een Goed Stel Duifjes ✦</footer>
   </div>
 
-  <script src="./config.js?v=4"></script>
+  <script src="./config.js?v=6"></script>
+  <script src="./assets/scoring.js?v=6"></script>
+  <script src="./assets/api.js?v=6"></script>
   <script>
     (function(){ var c = window.DUIVEN_CONFIG || {};
-      document.getElementById('titel').textContent = c.SEIZOEN || 'Duivencompetitie'; })();
+      document.getElementById('titel').textContent = c.SEIZOEN || 'Duivencompetitie';
+      API.loadModel().catch(function () {}); /* zet de titel op het seizoen uit de Sheet */ })();
   </script>
 </body>
 </html>

@@ -3,15 +3,14 @@
  *
  * Rol: de Google Sheet is de database; dit script is de (gratis) API ertussen.
  *   - doGet()  -> geeft de ruwe tabellen als JSON terug (de site rekent zelf).
- *   - doPost() -> router op payload.action:
- *        "uitslag" (standaard) : nieuwe vlucht-uitslag in tabblad "Resultaten".
- *        "setupSeizoen"        : vervangt deelnemers- en duivenlijst (seizoensstart).
+ *   - doPost() -> router op payload.action (zie doPost voor de volledige lijst).
  *
- * De Sheet heeft vier tabbladen met deze EXACTE kopregels (rij 1):
+ * De Sheet heeft deze tabbladen met EXACTE kopregels (rij 1):
  *   Duivendatabase : naam | ring_lang | ring_kort | teams
  *   Resultaten     : vlucht | positie | ring_kort | naam_override
  *   Puntentabel    : positie | punten
  *   Deelnemers     : naam
+ *   Instellingen   : sleutel | waarde   (o.a. seizoen, duivenPerTeam, archief_<jaar>)
  *
  * Deployen: Extensies → Apps Script → plak dit → Implementeren → Nieuwe implementatie
  *   → type "Web-app" → Uitvoeren als: ikzelf → Toegang: "Iedereen" → kopieer /exec-URL
@@ -24,6 +23,11 @@
  * Projectinstellingen (tandwiel) → Scripteigenschappen → eigenschap BEHEER_CODE.
  * Zonder ingestelde BEHEER_CODE weigert het script alle schrijfacties. Lezen (GET)
  * blijft open, want de site toont die data toch al.
+ * Uitzondering: kiesDuif met exclusief:true (een team kiest op het keuzemoment een
+ * VRIJE duif via zijn eigen teamlink) mag zonder code — die kan niets overschrijven.
+ *
+ * LET OP: dit is het ENIGE API-bestand in het Apps Script-project. Maak nooit een
+ * tweede .gs met een eigen doPost — Apps Script laadt alle bestanden in één scope.
  */
 
 var TAB = {
@@ -92,30 +96,41 @@ function doGet(e) {
   }
 }
 
-/** POST-router. Kiest op basis van payload.action.
- *   - "uitslag" (standaard) -> slaat een vlucht-uitslag op.
- *   - "setupSeizoen"        -> vervangt de deelnemers- en duivenlijst (seizoensstart). */
+/** POST-router. Kiest op basis van payload.action:
+ *   uitslag (standaard) · checkCode · kiesDuif · hernoemDuif · verwijderUitTeam ·
+ *   resetDuiven · setInstellingen · archiveerSeizoen · nieuwSeizoen · setDuiven ·
+ *   setDeelnemers · setupSeizoen (oud, vervangt alles in één keer). */
 function doPost(e) {
   var lock = LockService.getScriptLock();
   try {
     lock.waitLock(20000); // voorkom dat twee mensen tegelijk schrijven
     var payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    var verwacht = PropertiesService.getScriptProperties().getProperty('BEHEER_CODE');
-    if (!verwacht) {
-      return jsonOut({ ok: false, auth: true,
-        error: 'Opslaan staat uit: stel eerst BEHEER_CODE in bij de Scripteigenschappen.' });
-    }
-    if (String(payload.code || '') !== verwacht) {
-      return jsonOut({ ok: false, auth: true, error: 'Beheercode onjuist.' });
+    var openbaar = payload.action === 'kiesDuif' && payload.exclusief === true;
+    if (!openbaar) {
+      var verwacht = PropertiesService.getScriptProperties().getProperty('BEHEER_CODE');
+      if (!verwacht) {
+        return jsonOut({ ok: false, auth: true, nietIngesteld: true,
+          error: 'Opslaan staat uit: stel eerst BEHEER_CODE in bij de Scripteigenschappen.' });
+      }
+      if (String(payload.code || '') !== verwacht) {
+        return jsonOut({ ok: false, auth: true, error: 'Beheercode onjuist.' });
+      }
     }
     delete payload.code;
-    if (payload.action === 'setupSeizoen') return setupSeizoen(payload);
-    if (payload.action === 'kiesDuif') return kiesDuif(payload);
-    if (payload.action === 'hernoemDuif') return hernoemDuif(payload);
-    if (payload.action === 'verwijderUitTeam') return verwijderUitTeam(payload);
-    if (payload.action === 'resetDuiven') return resetDuiven(payload);
-    if (payload.action === 'setInstellingen') return setInstellingen(payload);
-    return saveUitslag(payload);
+    switch (payload.action) {
+      case 'checkCode': return jsonOut({ ok: true });
+      case 'setupSeizoen': return setupSeizoen(payload);
+      case 'kiesDuif': return kiesDuif(payload);
+      case 'hernoemDuif': return hernoemDuif(payload);
+      case 'verwijderUitTeam': return verwijderUitTeam(payload);
+      case 'resetDuiven': return resetDuiven(payload);
+      case 'setInstellingen': return setInstellingen(payload);
+      case 'archiveerSeizoen': return archiveerSeizoen(payload);
+      case 'nieuwSeizoen': return nieuwSeizoen(payload);
+      case 'setDuiven': return setDuiven(payload);
+      case 'setDeelnemers': return setDeelnemers(payload);
+      default: return saveUitslag(payload);
+    }
   } catch (err) {
     return jsonOut({ ok: false, error: String(err.message || err) });
   } finally {
@@ -363,32 +378,144 @@ function resetDuiven(payload) {
 }
 
 /** Slaat beheer-instellingen op in het tabblad "Instellingen" (sleutel | waarde).
- *  Body: { duivenPerTeam?: <getal>, ... }. Maakt het tabblad aan als het ontbreekt
- *  en werkt bestaande sleutels bij (upsert). De 'action'-sleutel wordt overgeslagen. */
+ *  Body: { duivenPerTeam?: <getal>, ... }. De 'action'-sleutel wordt overgeslagen. */
 function setInstellingen(payload) {
+    var waarden = {};
+    Object.keys(payload).forEach(function (k) { if (k !== 'action') waarden[k] = payload[k]; });
+    return jsonOut({ ok: true, instellingen: upsertInstellingen(waarden) });
+}
+
+/** Schrijft sleutels naar "Instellingen" (maakt het tabblad aan als het ontbreekt;
+ *  bestaande sleutels worden bijgewerkt). */
+function upsertInstellingen(waarden) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sh = ss.getSheetByName(TAB.instellingen);
     if (!sh) {
       sh = ss.insertSheet(TAB.instellingen);
       sh.getRange(1, 1, 1, 2).setValues([['sleutel', 'waarde']]);
     }
-    // Bestaande sleutels -> rijnummer.
     var values = sh.getDataRange().getValues();
     var rijVan = {};
     for (var r = 1; r < values.length; r++) {
       var s = String(values[r][0] || '').trim();
       if (s) rijVan[s] = r + 1;
     }
-    var gezet = {};
-    Object.keys(payload).forEach(function (sleutel) {
-      if (sleutel === 'action') return;
-      var waarde = payload[sleutel];
-      if (rijVan[sleutel]) {
-        sh.getRange(rijVan[sleutel], 2).setValue(waarde);
-      } else {
-        sh.appendRow([sleutel, waarde]);
-      }
-      gezet[sleutel] = waarde;
+    Object.keys(waarden).forEach(function (sleutel) {
+      if (rijVan[sleutel]) sh.getRange(rijVan[sleutel], 2).setValue(waarden[sleutel]);
+      else sh.appendRow([sleutel, waarden[sleutel]]);
     });
-    return jsonOut({ ok: true, instellingen: gezet });
+    return waarden;
+}
+
+/** Huidig seizoen (jaartal) uit Instellingen, of payload.seizoen als die is meegegeven. */
+function huidigSeizoen(payload) {
+    var s = String((payload && payload.seizoen) || readInstellingen().seizoen || '').trim();
+    if (!/^\d{4}$/.test(s)) throw new Error('Onbekend seizoen (verwacht een jaartal, bv. 2026).');
+    return s;
+}
+
+/** Stap 1 — Archiveer dit seizoen: maakt een volledige kopie van deze Google Sheet
+ *  ("Duivencompetitie <jaar> - ARCHIEF (<datum>)") en onthoudt de link als
+ *  Instellingen › archief_<jaar>.
+ *  Body: { seizoen?: '2026' }  — of, met { url }, alleen de link van een zelf
+ *  gemaakte kopie vastleggen. */
+function archiveerSeizoen(payload) {
+    var seizoen = huidigSeizoen(payload);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var url = String(payload.url || '').trim(), naam = '';
+    if (url) {
+      if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(url)) {
+        throw new Error('Dat lijkt geen link naar een Google Sheet.');
+      }
+    } else {
+      var datum = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'd-M-yyyy');
+      naam = 'Duivencompetitie ' + seizoen + ' - ARCHIEF (' + datum + ')';
+      var kopie = ss.copy(naam);
+      url = kopie.getUrl();
+    }
+    var w = { seizoen: seizoen };
+    w['archief_' + seizoen] = url;
+    upsertInstellingen(w);
+    return jsonOut({ ok: true, seizoen: seizoen, naam: naam, url: url });
+}
+
+/** Stap 2 — Leeg de database maar bewaar de teamnamen.
+ *  Wist alle uitslagen én alle duiven (nieuw jaar = nieuwe ringnummers), laat de
+ *  Deelnemers en de Puntentabel staan, en zet het seizoen op het nieuwe jaartal.
+ *  Weigert zolang er geen archief van het huidige seizoen is vastgelegd.
+ *  Body: { nieuwSeizoen: '2027' } */
+function nieuwSeizoen(payload) {
+    var inst = readInstellingen();
+    var huidig = huidigSeizoen({ seizoen: inst.seizoen || payload.huidigSeizoen });
+    var nieuw = String(payload.nieuwSeizoen || '').trim();
+    if (!/^\d{4}$/.test(nieuw)) throw new Error('Geef het nieuwe seizoen als jaartal (bv. 2027).');
+    if (!inst['archief_' + huidig]) {
+      throw new Error('Er is nog geen archief van seizoen ' + huidig + '. Doe eerst stap 1.');
+    }
+    var uitslagen = readSheet(TAB.resultaten).length;
+    var duiven = readSheet(TAB.duiven).length;
+    var deelnemers = readSheet(TAB.deelnemers).length;
+    writeTab(TAB.resultaten, ['vlucht', 'positie', 'ring_kort', 'naam_override'], []);
+    writeTab(TAB.duiven, ['naam', 'ring_lang', 'ring_kort', 'teams'], []);
+    upsertInstellingen({ seizoen: nieuw });
+    return jsonOut({ ok: true, seizoen: nieuw, uitslagenGewist: uitslagen,
+      duivenGewist: duiven, deelnemersBewaard: deelnemers });
+}
+
+/** Stap 3 — Duifnummers vastleggen. Veilig samenvoegen: duiven die al bestaan
+ *  (zelfde ring_lang) houden hun naam en team; nieuwe komen er teamloos bij;
+ *  duiven die niet meer in de lijst staan verdwijnen. Een duif MET team wordt
+ *  alleen verwijderd als forceer:true is meegegeven.
+ *  Body: { duiven: [ {ring_lang, ring_kort} ], forceer?: bool } */
+function setDuiven(payload) {
+    var lijst = (payload.duiven || []).filter(function (d) { return d && String(d.ring_lang || '').trim(); });
+    var sleutel = function (lang) { return String(lang).replace(/\D/g, ''); };
+    var oud = {};
+    readSheet(TAB.duiven).forEach(function (d) { oud[sleutel(d.ring_lang)] = d; });
+
+    var blijft = {};
+    var rows = lijst.map(function (d) {
+      var k = sleutel(d.ring_lang);
+      blijft[k] = true;
+      var o = oud[k] || {};
+      return [o.naam || '', String(d.ring_lang).trim(), String(d.ring_kort || '').trim(), o.teams || ''];
+    });
+    var weg = Object.keys(oud).filter(function (k) { return !blijft[k]; });
+    var wegMetTeam = weg.filter(function (k) { return oud[k].teams; })
+      .map(function (k) { return oud[k].ring_lang + (oud[k].naam ? ' (' + oud[k].naam + ')' : ''); });
+    if (wegMetTeam.length && !payload.forceer) {
+      return jsonOut({ ok: false, wegMetTeam: wegMetTeam,
+        error: 'Deze duiven hebben al een team en zouden verdwijnen: ' + wegMetTeam.join(', ') + '.' });
+    }
+    writeTab(TAB.duiven, ['naam', 'ring_lang', 'ring_kort', 'teams'], rows);
+    return jsonOut({ ok: true, duiven: rows.length, verwijderd: weg.length,
+      nieuw: rows.length - (Object.keys(oud).length - weg.length) });
+}
+
+/** Stap 4 — Teamnamen actualiseren. Vervangt de deelnemerslijst; bij een
+ *  naamswijziging wordt de nieuwe naam ook in het teams-veld van de duiven gezet.
+ *  Body: { deelnemers: [naam, ...], hernoemd?: [ {oud, nieuw} ] } */
+function setDeelnemers(payload) {
+    var namen = (payload.deelnemers || [])
+      .map(function (n) { return String(n || '').trim(); }).filter(Boolean);
+    if (!namen.length) throw new Error('Geen deelnemers meegegeven.');
+    writeTab(TAB.deelnemers, ['naam'], namen.map(function (n) { return [n]; }));
+
+    var map = {};
+    (payload.hernoemd || []).forEach(function (h) {
+      var o = String(h.oud || '').trim(), n = String(h.nieuw || '').trim();
+      if (o && n && o !== n) map[o] = n;
+    });
+    var aangepast = 0;
+    if (Object.keys(map).length) {
+      var ctx = duivenSheetCtx();
+      for (var r = 1; r < ctx.values.length; r++) {
+        var huidig = String(ctx.values[r][ctx.idx.teams]).trim();
+        if (!huidig) continue;
+        var teams = huidig.split('|').map(function (t) { t = t.trim(); return map[t] || t; });
+        var nieuw = teams.join(' | ');
+        if (nieuw !== huidig) { ctx.sh.getRange(r + 1, ctx.idx.teams + 1).setValue(nieuw); aangepast++; }
+      }
+    }
+    return jsonOut({ ok: true, deelnemers: namen.length, duivenAangepast: aangepast });
 }

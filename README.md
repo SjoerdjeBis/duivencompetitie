@@ -75,20 +75,42 @@ verschijnen direct ter controle. Bijzonderheden worden afgevangen:
 - **Twee duiven met dezelfde 3 cijfers** → je kiest welke je bedoelt.
 - **Dubbel ingevoerd** → wordt rood gemarkeerd en blokkeert verzenden.
 
-## Seizoen voorbereiden
+## Seizoen voorbereiden (seizoenswissel)
 
-Op `voorbereiden.html` zet je aan het begin van het seizoen alles klaar:
+`voorbereiden.html` is een stappenplan. Werk het van boven naar beneden af; elke stap
+toont zelf of hij klaar (✓), aan de beurt of nog niet aan de beurt (grijs) is.
 
-- **Deelnemers**: vorig jaar staat aangevinkt klaar — vink af wie stopt, pas namen
-  aan (naamswijziging) en voeg nieuwe deelnemers toe.
-- **Duiven**: plak de **lange ringnummers** (één per regel); de **korte code**
-  (laatste 3 cijfers) wordt automatisch afgeleid. Duiven die op dezelfde 3 cijfers
-  eindigen worden gemarkeerd, want die vragen bij het invoeren om een keuze.
+**A · Seizoen afsluiten** (zolang er uitslagen zijn)
 
-Opslaan vervangt de tabbladen `Deelnemers` en `Duivendatabase` (de duiven krijgen
-nog géén naam/team — dat gebeurt later op het keuzemoment). Optioneel wis je ook de
-uitslagen van vorig jaar. In demo-modus gebruik je de **kopieerknoppen** om de
-lijsten in je Sheet te plakken.
+1. **Archiveer dit seizoen** — maakt een kopie van de hele Google Sheet in je Drive
+   (`Duivencompetitie <jaar> - ARCHIEF (<datum>)`). Zelf al een kopie gemaakt? Leg de
+   link vast via "Zelf al een kopie gemaakt?".
+2. **Leeg de database, bewaar de teamnamen** — kan pas na stap 1. Wist alle uitslagen
+   en alle duiven; teams, puntentabel en instellingen blijven. Het seizoen gaat naar
+   het nieuwe jaartal (ter bevestiging typ je dat jaartal in).
+
+**B · Nieuw seizoen klaarzetten** (open zodra de uitslagen leeg zijn)
+
+3. **Duifnummers invullen** — plak de lange ringnummers; korte code = laatste 3
+   cijfers. Opnieuw opslaan is veilig: bestaande duiven houden naam + team.
+4. **Teamnamen actualiseren** — vinkje uit = stopt, naam aanpassen = naamswijziging
+   (gaat mee naar de duiven van dat team), + Nieuw team.
+5. **Aantal duiven per team** — het maximum op het keuzemoment.
+6. **Keuzemoment** — link naar de teamlinks.
+
+Onder **Noodknoppen** staat "Duiven resetten" (keuzemoment overdoen).
+
+Het seizoen (jaartal) staat in de Sheet, tabblad `Instellingen` › `seizoen`; de titel
+op alle pagina's volgt dat vanzelf. `config.js` › `SEIZOEN` is alleen de terugval.
+
+## Beheercode
+
+Opslaan vraagt de **beheercode** (Apps Script › Projectinstellingen › Scripteigenschappen
+› `BEHEER_CODE`). Op een nieuw apparaat vraagt de site er bij het openen van een
+beheerpagina om; de code wordt gecontroleerd en daarna op dat apparaat onthouden.
+Rechtsboven staat een slotje: 🔒 = nog invullen, 🔓 = ontgrendeld (klik = vergeten).
+Teams die op het keuzemoment via hun eigen teamlink een vrije duif kiezen, hebben
+geen code nodig. De tussenstand blijft openbaar.
 
 ## Datamodel
 
@@ -98,10 +120,11 @@ lijsten in je Sheet te plakken.
   finisher per vlucht. Dit is de enige ruwe invoer; al het andere wordt berekend.
 - **Puntentabel**: `positie, punten` (50, 45, 40, 37, 33, … 1 voor plek 1–25).
 - **Deelnemers**: `naam` — zodat ook 0-punters in het klassement staan.
+- **Instellingen**: `sleutel, waarde` — o.a. `seizoen`, `duivenPerTeam`, `archief_<jaar>`.
 
 ## Onderhoud
 
-- **Nieuwe duif / nieuw seizoen**: voeg rijen toe in het tabblad `Duivendatabase`.
+- **Nieuwe duif / nieuw seizoen**: via Voorbereiden (stap 3 / stappen 1-6).
 - **Puntenschaal aanpassen**: wijzig `Puntentabel`.
 - **Vergissing in een uitslag**: stuur dezelfde vlucht opnieuw in met
   `overwrite: true`, of corrigeer de regels in het tabblad `Resultaten`.

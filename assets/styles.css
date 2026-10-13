@@ -541,6 +541,96 @@ button.ghost.gevaar { color: var(--danger); border-color: #f1c9c0; white-space: 
 button.ghost.gevaar:hover { background: #fdf0ee; }
 button.ghost.gevaar:disabled { color: var(--muted); border-color: var(--line); background: transparent; cursor: not-allowed; }
 
+/* ====================================================================== */
+/* ==============  Voorbereiden: stappenplan seizoenswissel  ============ */
+/* ====================================================================== */
+.intro { margin: 0 0 10px; }
+.stand { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--muted); font-size: .88rem; margin: 0 0 8px; }
+.stand span + span::before { content: "·"; margin-right: 14px; color: var(--line); }
+h2.fase {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+  margin: 26px 4px 10px;
+}
+.card.stap { margin-bottom: 12px; padding: 18px 20px; }
+.stap-kop { display: flex; align-items: center; gap: 12px; }
+.stap-kop h3 { margin: 0; font-size: 1.05rem; flex: 1; }
+.stap-nr {
+  flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 800; font-size: .95rem; background: var(--accent); color: #fff;
+}
+.stap-status {
+  flex: none; font-size: .78rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); white-space: nowrap;
+}
+.stap-status:empty { display: none; }
+.stap-body > .sub:first-child { margin-top: 12px; }
+.stap .sub { margin: 10px 0 0; }
+.stap .wacht-tekst { display: none; color: var(--muted); font-size: .9rem; margin: 8px 0 0 42px; }
+
+/* klaar: groen vinkje i.p.v. nummer, inhoud blijft bruikbaar */
+.stap[data-status="klaar"] .stap-nr { background: var(--accent-soft); color: var(--accent); }
+.stap[data-status="klaar"] .stap-nr { font-size: 0; }
+.stap[data-status="klaar"] .stap-nr::after { content: "\2713"; font-size: 1rem; }
+/* actief: accentrand */
+.stap[data-status="actief"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.stap[data-status="actief"] .stap-status { background: var(--accent); color: #fff; }
+/* wacht: grijs, inhoud ingeklapt */
+.stap[data-status="wacht"] { background: #faf8f3; box-shadow: none; }
+.stap[data-status="wacht"] .stap-nr { background: var(--line); color: var(--muted); }
+.stap[data-status="wacht"] h3 { color: var(--muted); }
+.stap[data-status="wacht"] .wacht-tekst { display: block; }
+.stap[data-status="wacht"] .stap-body { display: none; }
+
+.effect-lijst { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 6px; font-size: .92rem; }
+.effect-lijst li { padding-left: 26px; position: relative; }
+.effect-lijst li::before { position: absolute; left: 0; font-weight: 800; }
+.effect-lijst li.weg::before { content: "\2715"; color: var(--danger); }
+.effect-lijst li.blijft::before { content: "\2713"; color: var(--accent); }
+
+.knoppen { align-items: center; }
+.getal-input {
+  font: inherit; width: 96px; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; background: #fff;
+}
+.getal-label { font-weight: 600; font-size: .9rem; }
+.knop-info { color: var(--muted); font-size: .88rem; }
+button.gevaar-vol { background: var(--danger); color: #fff; }
+button.gevaar-vol:disabled, button.ghost:disabled { opacity: .5; cursor: not-allowed; }
+.knop-link.uit { pointer-events: none; background: var(--silver); }
+.rekensom { font-size: .88rem; }
+.rekensom.tekort { color: var(--danger); }
+.deelnemer-rij.hernoemd .naam-input { border-color: var(--gold); background: #fdf8ea; }
+
+.eigen-kopie { margin-top: 12px; font-size: .88rem; }
+.eigen-kopie summary { cursor: pointer; color: var(--muted); }
+.eigen-kopie-rij { display: flex; gap: 8px; margin-top: 8px; }
+.eigen-kopie-rij input {
+  flex: 1; min-width: 0; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px;
+}
+
+details.noodknoppen { margin-top: 26px; padding: 14px 20px; box-shadow: none; }
+details.noodknoppen summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+details.noodknoppen[open] summary { margin-bottom: 8px; }
+
+/* ---- Beheercode: slotje in de kop + venster ---- */
+.slot-knop {
+  margin-left: auto; align-self: flex-start; font-size: .82rem; padding: 7px 12px;
+  border-radius: 999px; background: #fdf0ee; color: var(--danger); border: 1px solid #f1c9c0;
+}
+.slot-knop.open { background: var(--accent-soft); color: var(--accent); border-color: #cfe6da; }
+.code-modal h3 { margin: 4px 0 0; }
+.code-modal .sub { margin: 6px 0 14px; font-size: .9rem; }
+.code-modal input[type=password] { margin-bottom: 10px; letter-spacing: .1em; }
+.code-onthoud { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .88rem; color: var(--muted); }
+.code-onthoud input { width: auto !important; margin: 0 !important; accent-color: var(--accent); }
+.code-modal .knoppen { margin-top: 14px; }
+.code-modal .melding { text-align: left; }
+
+@media (max-width: 620px) {
+  .card.stap { padding: 16px; }
+  .stap .wacht-tekst { margin-left: 0; }
+  .eigen-kopie-rij { flex-direction: column; }
+}
+
 footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 8px; }
 
 @media (max-width: 620px) {
