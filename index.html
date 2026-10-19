@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Beheer — Duivencompetitie</title>
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./assets/styles.css?v=7">
+  <link rel="stylesheet" href="./assets/styles.css?v=8">
 </head>
 <body data-beheer>
   <div class="wrap">
@@ -25,6 +25,8 @@
         <a href="./tussenstandopen.html" target="_blank" rel="noopener">Tussenstand ↗</a>
       </nav>
     </header>
+
+    <div id="status" class="card status-kaart verborgen"></div>
 
     <div class="card">
       <h2>Beheeromgeving 🕊️</h2>
@@ -46,13 +48,9 @@
     <footer class="app">Een Goed Stel Duifjes ✦</footer>
   </div>
 
-  <script src="./config.js?v=7"></script>
-  <script src="./assets/scoring.js?v=7"></script>
-  <script src="./assets/api.js?v=7"></script>
-  <script>
-    (function(){ var c = window.DUIVEN_CONFIG || {};
-      document.getElementById('titel').textContent = c.SEIZOEN || 'Duivencompetitie';
-      API.loadModel().catch(function () {}); /* zet de titel op het seizoen uit de Sheet */ })();
-  </script>
+  <script src="./config.js?v=8"></script>
+  <script src="./assets/scoring.js?v=8"></script>
+  <script src="./assets/api.js?v=8"></script>
+  <script src="./assets/start.js?v=8"></script>
 </body>
 </html>

@@ -119,7 +119,7 @@
     if (treffers.length === 1) {
       res.className = 'resolved ok';
       const d = treffers[0];
-      res.append(document.createTextNode(d.naam + ' '));
+      res.append(document.createTextNode((d.naam || '(nog geen naam)') + ' '));
       if (d.teams.length) {
         const t = document.createElement('span'); t.className = 'team';
         t.textContent = '· ' + d.teams.join(' · ');
@@ -130,8 +130,9 @@
       res.className = 'resolved warn';
       const sel = document.createElement('select');
       sel.append(new Option('Kies welke duif…', ''));
-      treffers.forEach(d => sel.append(new Option(d.naam + '  (' + d.ring_lang + ')', d.naam)));
-      sel.addEventListener('change', () => { rij.dataset.override = sel.value; bewaarConcept(); });
+      // Waarde = lang ringnummer: dat is uniek (namen kunnen dubbel voorkomen).
+      treffers.forEach(d => sel.append(new Option((d.naam || '(naamloos)') + '  (' + d.ring_lang + ')', d.ring_lang)));
+      sel.addEventListener('change', () => { rij.dataset.override = sel.value; checkDuplicaten(); bewaarConcept(); });
       res.append(document.createTextNode('Twee duiven op ' + code + ': '));
       res.append(sel);
     } else {
@@ -146,13 +147,29 @@
     }
   }
 
-  /** Markeert dubbel ingevoerde codes. */
+  /** Sleutel van een rij: bij een botsing de gekozen duif (lang ringnummer), anders de code.
+   *  Zo mogen twee verschillende duiven met dezelfde laatste 3 cijfers in één vlucht. */
+  function duifSleutel(r) {
+    const c = r.dataset.code;
+    if (!c) return '';
+    const botst = (MODEL.byKort[c] || []).length > 1;
+    return botst ? (r.dataset.override || c) : c;
+  }
+
+  /** Markeert dubbel ingevoerde duiven. */
   function checkDuplicaten() {
     const rijen = [...document.querySelectorAll('.pos-rij')];
     const tel = {};
-    rijen.forEach(r => { const c = r.dataset.code; if (c) tel[c] = (tel[c] || 0) + 1; });
-    rijen.forEach(r => r.classList.toggle('dup', !!r.dataset.code && tel[r.dataset.code] > 1));
+    rijen.forEach(r => { const k = duifSleutel(r); if (k) tel[k] = (tel[k] || 0) + 1; });
+    rijen.forEach(r => { const k = duifSleutel(r); r.classList.toggle('dup', !!k && tel[k] > 1); });
     return Object.values(tel).some(n => n > 1);
+  }
+
+  /** Plekken met een botsende code waar nog niet gekozen is welke duif het is. */
+  function onbeslisteBotsingen() {
+    return [...document.querySelectorAll('.pos-rij')]
+      .filter(r => r.dataset.code && (MODEL.byKort[r.dataset.code] || []).length > 1 && !r.dataset.override)
+      .map(r => r.dataset.pos);
   }
 
   function verzamel() {
@@ -175,7 +192,10 @@
     $('melding').innerHTML = '';
     const vlucht = Number($('vlucht').value);
     if (!vlucht) return toonMelding('fout', 'Vul een vluchtnummer in.');
-    if (checkDuplicaten()) return toonMelding('fout', 'Er staan dubbele ringnummers in de uitslag — corrigeer de rood gemarkeerde plekken.');
+    const open = onbeslisteBotsingen();
+    if (open.length) return toonMelding('fout', 'Kies bij plek ' + open.join(', ') + ' welke duif bedoeld is ' +
+      '(er zijn meerdere duiven met dezelfde laatste 3 cijfers).');
+    if (checkDuplicaten()) return toonMelding('fout', 'Er staat een duif dubbel in de uitslag — corrigeer de rood gemarkeerde plekken.');
 
     const finishers = verzamel();
     if (!finishers.length) return toonMelding('fout', 'Nog niets ingevuld.');
@@ -194,6 +214,7 @@
         '<a href="./tussenstandopen.html" target="_blank" rel="noopener">tussenstand</a>.');
       if ($('overschrijf')) $('overschrijf').checked = false;
       wisConcept();
+      await herlaadEtappes();
     } catch (err) {
       toonMelding('fout', 'Opslaan mislukt: ' + err.message);
     } finally {
@@ -209,24 +230,99 @@
     wisConcept();
   }
 
+  /* ---------- Ingevoerde etappes: bekijken, wijzigen, verwijderen ---------- */
+
+  async function herlaadEtappes() {
+    try {
+      const { model } = await API.loadModel();
+      MODEL = model;
+      tekenEtappes();
+    } catch (e) { /* lijst blijft zoals hij was */ }
+  }
+
+  function tekenEtappes() {
+    const box = $('etappes');
+    box.innerHTML = '';
+    const vl = MODEL.vluchten;
+    $('etappes-telling').textContent = vl.length ? '(' + vl.length + ')' : '';
+    if (!vl.length) {
+      box.append(Object.assign(document.createElement('div'), { className: 'leeg', textContent: 'Nog geen etappes ingevoerd.' }));
+      return;
+    }
+    vl.slice().reverse().forEach(v => {
+      const rij = document.createElement('div');
+      rij.className = 'etappe-rij';
+      const top = v.finishers.slice(0, 3).map(f => {
+        const d = Scoring.resolveDuif(MODEL, f);
+        return f.positie + '. ' + (d.naam || f.ring_kort);
+      }).join(' · ');
+      const tekst = document.createElement('div');
+      tekst.className = 'etappe-tekst';
+      const kop = document.createElement('strong');
+      kop.textContent = 'Vlucht ' + v.nummer;
+      const sub = document.createElement('span');
+      sub.textContent = v.finishers.length + ' plekken · ' + top;
+      tekst.append(kop, sub);
+      const wijzig = Object.assign(document.createElement('button'), { type: 'button', className: 'ghost', textContent: 'Wijzig' });
+      const weg = Object.assign(document.createElement('button'), { type: 'button', className: 'ghost gevaar', textContent: 'Verwijder' });
+      wijzig.addEventListener('click', () => laadInFormulier(v));
+      weg.addEventListener('click', () => verwijderEtappe(v, weg));
+      rij.append(tekst, wijzig, weg);
+      box.append(rij);
+    });
+  }
+
+  /** Zet een bestaande vlucht in het formulier, met "vervangen" aangevinkt. */
+  function laadInFormulier(v) {
+    const ingevuld = [...document.querySelectorAll('.pos-rij input')].some(i => i.value);
+    if (ingevuld && !window.confirm('Het formulier is niet leeg. Overschrijven met vlucht ' + v.nummer + '?')) return;
+    wis();
+    $('vlucht').value = v.nummer;
+    v.finishers.forEach(f => {
+      const rij = document.querySelector('.pos-rij[data-pos="' + f.positie + '"]');
+      if (!rij) return;
+      rij.querySelector('input').value = f.ring_kort;
+      resolveer(rij);
+      if (f.naam_override) {
+        rij.dataset.override = f.naam_override;
+        const sub = rij.querySelector('.resolved select, .resolved input');
+        if (sub) sub.value = f.naam_override;
+      }
+    });
+    checkDuplicaten();
+    $('overschrijf').checked = true;
+    bewaarConcept();
+    toonMelding('ok', 'Vlucht ' + v.nummer + ' staat in het formulier. Pas aan en klik op ' +
+      '<strong>Uitslag verzenden</strong>; "vervangen" staat al aan.');
+    $('vlucht').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  async function verwijderEtappe(v, knop) {
+    if (!window.confirm('Vlucht ' + v.nummer + ' (' + v.finishers.length + ' plekken) helemaal verwijderen?\n\n' +
+        'De punten van deze etappe verdwijnen uit de stand.')) return;
+    knop.disabled = true; knop.textContent = 'Verwijderen…';
+    try {
+      await API.verwijderVlucht({ vlucht: v.nummer });
+      toonMelding('ok', '✓ Vlucht ' + v.nummer + ' is verwijderd.');
+      await herlaadEtappes();
+    } catch (err) {
+      toonMelding('fout', 'Verwijderen mislukt: ' + err.message);
+      knop.disabled = false; knop.textContent = 'Verwijder';
+    }
+  }
+
   async function init() {
     const banner = $('banner');
     try {
-      const { model, live } = await API.loadModel();
+      const { model } = await API.loadModel();
       MODEL = model;
 
       // Volgend vluchtnummer voorstellen.
       const maxNr = model.vluchten.reduce((m, v) => Math.max(m, v.nummer), 0);
       $('vlucht').value = maxNr + 1;
 
-      banner.className = 'banner' + (live ? ' live' : '');
-      if (live) {
-        banner.textContent = 'Live · je uitslag wordt opgeslagen in de Google Sheet en de tussenstand werkt direct bij.';
-      } else {
-        banner.innerHTML = 'Demo-modus · je kunt invoeren oefenen, maar <strong>verzenden werkt nog niet</strong>. ' +
-          'Stel API_URL in <code>config.js</code> in om echt op te slaan.';
-        $('verzend').disabled = true;
-      }
+      banner.className = 'banner live';
+      banner.textContent = 'Live · je uitslag wordt opgeslagen in de Google Sheet en de tussenstand werkt direct bij.';
 
       const rijen = $('rijen');
       for (let p = 1; p <= AANTAL; p++) rijen.append(maakRij(p));
@@ -237,6 +333,7 @@
 
       // Eerder (per ongeluk) verlaten invoer terugzetten.
       herstelConcept();
+      tekenEtappes();
     } catch (err) {
       banner.className = 'banner';
       toonMelding('fout', 'Kon de duivenlijst niet laden: ' + err.message);

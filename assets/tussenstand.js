@@ -8,13 +8,12 @@
 
   const cfg = window.DUIVEN_CONFIG || {};
   document.getElementById('titel').textContent = cfg.SEIZOEN || 'Duivencompetitie';
-  document.title = (cfg.SEIZOEN || 'Duivencompetitie') + ' — Tussenstand';
+  document.title = 'Tussenstand — ' + (cfg.SEIZOEN || 'Duivencompetitie');
 
   const el = (tag, attrs = {}, ...kids) => {
     const n = document.createElement(tag);
     for (const k in attrs) {
       if (k === 'class') n.className = attrs[k];
-      else if (k === 'html') n.innerHTML = attrs[k];
       else n.setAttribute(k, attrs[k]);
     }
     kids.flat().forEach(c => n.append(c && c.nodeType ? c : document.createTextNode(c)));
@@ -39,7 +38,7 @@
       const heeftTeam = duif.teams && duif.teams.length;
       const naam = duif.naam || f.naam_override || '—';
       const main = el('td', { class: 'dag-main' }, el('span', { class: 'd-naam' }, naam));
-      if (heeftTeam) main.append(el('span', { class: 'v', html: '&nbsp; ' + duif.teams.join(' · ') }));
+      if (heeftTeam) main.append(el('span', { class: 'v' }, '\u00a0 ' + duif.teams.join(' · ')));
       const tr = el('tr', {},
         el('td', { class: 'dag-pos' }, String(f.positie)),
         el('td', { class: 'dag-ring' }, f.ring_kort ? ringChip(f.ring_kort) : '—'),
@@ -106,10 +105,9 @@
     }
 
     const rijen = stand.besteDuiven.map((d, i) => {
-      const duif = model.byNaam[d.naam];
-      const kort = duif ? duif.ring_kort : '';
+      const kort = d.ring_kort || '';
       const main = el('td', { class: 'dag-main' }, el('span', { class: 'd-naam' }, d.naam));
-      if (d.teams.length) main.append(el('span', { class: 'v', html: '&nbsp; ' + d.teams.join(' · ') }));
+      if (d.teams.length) main.append(el('span', { class: 'v' }, '\u00a0 ' + d.teams.join(' · ')));
       return el('tr', {},
         el('td', { class: 'dag-pos' }, String(i + 1)),
         el('td', { class: 'dag-ring' }, kort ? ringChip(kort) : '—'),
@@ -188,6 +186,7 @@
   }
 
   /* ---------- Tabbladen ---------- */
+  let actieveTab = 0;   // blijft staan bij verversen
   function buildTabs(stand, model) {
     const defs = [
       { label: 'Duiven vandaag', build: () => renderDuivenVandaag(stand, model) },
@@ -201,9 +200,10 @@
     const knoppen = [];
     const vlakken = [];
     defs.forEach((d, i) => {
-      const knop = el('button', { class: 'subtab' + (i === 0 ? ' active' : ''), type: 'button' }, d.label);
-      const vlak = el('div', { class: 'subtab-panel' + (i === 0 ? '' : ' verborgen') }, d.build());
+      const knop = el('button', { class: 'subtab' + (i === actieveTab ? ' active' : ''), type: 'button' }, d.label);
+      const vlak = el('div', { class: 'subtab-panel' + (i === actieveTab ? '' : ' verborgen') }, d.build());
       knop.addEventListener('click', () => {
+        actieveTab = i;
         knoppen.forEach(b => b.classList.remove('active'));
         vlakken.forEach(v => v.classList.add('verborgen'));
         knop.classList.add('active');
@@ -215,30 +215,55 @@
     return el('div', {}, bar, panels);
   }
 
-  async function init() {
+  function tijd(ts) {
+    return new Date(ts).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /** Tekent de stand; wordt aangeroepen met bewaarde én met verse data. */
+  function render(model, info) {
     const banner = document.getElementById('banner');
     const inhoud = document.getElementById('inhoud');
+    const stand = Scoring.computeStandings(model);
+
+    banner.className = 'banner' + (info.vers ? ' live' : '');
+    banner.textContent = info.vers
+      ? 'Live · bijgewerkt om ' + tijd(info.ts) + '. De stand ververst vanzelf.'
+      : 'Stand van ' + tijd(info.ts) + ' · nieuwste stand ophalen…';
+
+    document.title = 'Tussenstand — ' + (cfg.SEIZOEN || 'Duivencompetitie');
+    const y = window.scrollY;   // niet naar boven springen bij verversen
+    inhoud.innerHTML = '';
+    if (!stand.aantalVluchten) {
+      inhoud.append(el('div', { class: 'card' }, el('div', { class: 'leeg' }, 'Nog geen vluchten ingevoerd.')));
+      return;
+    }
+    inhoud.append(buildTabs(stand, model));
+    window.scrollTo(0, y);
+  }
+
+  async function laad() {
     try {
-      const { model, live } = await API.loadModel();
-      const stand = Scoring.computeStandings(model);
-
-      banner.className = 'banner' + (live ? ' live' : '');
-      banner.textContent = live
-        ? 'Live · standen werken automatisch bij zodra iemand een uitslag invoert.'
-        : 'Demo-modus · dit toont de gemigreerde data uit je Google Sheet. Stel API_URL in config.js in om live te gaan.';
-
-      inhoud.innerHTML = '';
-      if (!stand.aantalVluchten) {
-        inhoud.append(el('div', { class: 'card' }, el('div', { class: 'leeg' }, 'Nog geen vluchten ingevoerd.')));
+      await API.loadModelSnel(render);
+    } catch (err) {
+      const inhoud = document.getElementById('inhoud');
+      if (inhoud.querySelector('.subtabs, .card')) {
+        // We tonen al een (oudere) stand: alleen de banner aanpassen.
+        document.getElementById('banner').textContent =
+          'Kon de nieuwste stand niet ophalen; je ziet de laatst bekende stand.';
         return;
       }
-      inhoud.append(buildTabs(stand, model));
-    } catch (err) {
-      banner.className = 'banner';
       inhoud.innerHTML = '';
       inhoud.append(el('div', { class: 'melding fout' }, 'Kon de tussenstand niet laden: ' + err.message));
     }
   }
 
-  init();
+  // Elke 3 minuten (en bij terugkeren naar het tabblad) stil verversen.
+  async function ververs() {
+    if (document.hidden) return;
+    try { const { model } = await API.loadModel(); render(model, { vers: true, ts: Date.now() }); } catch (e) {}
+  }
+  setInterval(ververs, 3 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) ververs(); });
+
+  laad();
 })();

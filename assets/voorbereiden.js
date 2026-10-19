@@ -13,7 +13,6 @@
   document.getElementById('titel').textContent = cfg.SEIZOEN || 'Duivencompetitie';
 
   const $ = id => document.getElementById(id);
-  let LIVE = false;
   let M = null;          // het Scoring-model zoals laatst geladen
   let SEIZOEN = '';      // huidig seizoen (jaartal als tekst)
 
@@ -48,7 +47,7 @@
     const p = el.querySelector('.stap-status');
     if (p) p.textContent = pill || '';
     el.querySelectorAll('.stap-body button, .stap-body input, .stap-body textarea')
-      .forEach(x => { x.disabled = status === 'wacht' || !LIVE; });
+      .forEach(x => { x.disabled = status === 'wacht'; });
   }
 
   /* ================= Status van alle stappen ================= */
@@ -360,19 +359,18 @@
 
   /* ================= Laden ================= */
 
-  /** Laadt de data opnieuw; geeft terug of we live zijn. */
+  /** Laadt de data opnieuw. */
   async function herlaad() {
-    const { model, live } = await API.loadModel();
+    const { model } = await API.loadModel();
     M = model;
     SEIZOEN = String((M.instellingen || {}).seizoen ||
       ((cfg.SEIZOEN || '').match(/\d{4}/) || [])[0] || new Date().getFullYear());
-    return live;
   }
 
   async function init() {
     const banner = $('banner');
     try {
-      const live = LIVE = await herlaad();
+      await herlaad();
 
       // Editors één keer vullen (daarna niet overschrijven wat iemand aan het typen is).
       $('ringnummers').value = M.duiven.map(d => d.ring_lang).join('\n');
@@ -380,11 +378,8 @@
       vulDeelnemers();
       $('duiven-per-team').value = Number(M.instellingen.duivenPerTeam) || Number(cfg.DUIVEN_PER_TEAM) || 8;
 
-      banner.className = 'banner' + (live ? ' live' : '');
-      banner.innerHTML = live
-        ? 'Live · wijzigingen gaan direct naar de Google Sheet.'
-        : 'Demo-modus · opslaan kan niet (stel API_URL in <code>config.js</code> in).';
-      if (!live) document.querySelectorAll('.noodknoppen button').forEach(b => { b.disabled = true; });
+      banner.className = 'banner live';
+      banner.textContent = 'Live · wijzigingen gaan direct naar de Google Sheet.';
 
       $('archiveer').addEventListener('click', archiveer);
       $('archief-url-opslaan').addEventListener('click', archiefUrlOpslaan);

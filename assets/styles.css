@@ -656,6 +656,27 @@ a.ghost-link:hover { background: var(--accent-soft); }
   .link-rij > button.kopieer { grid-column: 3; justify-self: start; }
 }
 
+/* ---- Startpagina: seizoensstatus ---- */
+.status-kaart { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.status-stap { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+.status-kop { font-size: 1.3rem; font-weight: 800; margin: 2px 0 0; }
+.status-kaart .sub { margin: 6px 0 14px; }
+
+/* ---- Uitslag invoeren: ingevoerde etappes ---- */
+.etappe-lijst { display: grid; }
+.etappe-rij {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--line);
+}
+.etappe-rij:first-child { border-top: 0; }
+.etappe-tekst strong { display: block; }
+.etappe-tekst span { display: block; color: var(--muted); font-size: .86rem; }
+.etappe-rij button { padding: 8px 12px; font-size: .88rem; }
+@media (max-width: 620px) {
+  .etappe-rij { grid-template-columns: 1fr 1fr; }
+  .etappe-tekst { grid-column: 1 / -1; }
+}
+
 footer.app { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 8px; }
 
 @media (max-width: 620px) {

@@ -1,9 +1,10 @@
 /*
- * api.js — laadt de ruwe data en stuurt nieuwe uitslagen in.
+ * api.js — praat met de Apps Script Web App (API_URL in config.js).
  *
- * Twee modi:
- *  - LIVE  : window.DUIVEN_CONFIG.API_URL is ingevuld -> data uit de Apps Script Web App.
- *  - DEMO  : geen API_URL -> ruwe CSV's uit /data (alleen-lezen, geen inzenden).
+ *  - loadModel()        : haalt de ruwe tabellen op en bouwt het Scoring-model.
+ *  - loadModelSnel(fn)  : roept fn eerst aan met de laatst bewaarde data (direct
+ *                         beeld), daarna nog eens met verse data van de server.
+ *  - post-acties        : vragen zo nodig om de beheercode (zie hieronder).
  *
  * Let op de Apps Script CORS-eigenaardigheid: GET werkt direct; POST gebeurt met
  * Content-Type text/plain (geen preflight), de body is JSON als tekst.
@@ -14,37 +15,34 @@
   function cfg() { return global.DUIVEN_CONFIG || {}; }
   function isLive() { return !!(cfg().API_URL && cfg().API_URL.trim()); }
 
-  async function fetchText(url) {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' bij ' + url);
-    return res.text();
-  }
+  // Laatst opgehaalde data, voor een direct beeld bij de volgende keer openen.
+  const DATA_KEY = 'duiven-data-v1';
 
   /** Haalt de ruwe tabellen op en bouwt het Scoring-model. */
   async function loadModel() {
-    if (isLive()) {
-      const res = await fetch(cfg().API_URL + '?action=data', { cache: 'no-store' });
-      if (!res.ok) throw new Error('API gaf HTTP ' + res.status);
-      const raw = await res.json();
-      if (raw.ok === false) throw new Error(raw.error || 'API gaf een fout');
-      zetSeizoenTitel(raw.instellingen);
-      return { model: Scoring.buildModel(raw), live: true };
+    if (!isLive()) throw new Error('Geen API_URL ingesteld in config.js.');
+    const res = await fetch(cfg().API_URL + '?action=data', { cache: 'no-store' });
+    if (!res.ok) throw new Error('API gaf HTTP ' + res.status);
+    const raw = await res.json();
+    if (raw.ok === false) throw new Error(raw.error || 'API gaf een fout');
+    try { localStorage.setItem(DATA_KEY, JSON.stringify({ ts: Date.now(), raw: raw })); } catch (e) {}
+    zetSeizoenTitel(raw.instellingen);
+    return { model: Scoring.buildModel(raw), live: true };
+  }
+
+  /** Toont eerst de bewaarde data (meteen), daarna de verse.
+   *  render(model, { vers: bool, ts: tijdstip van de bewaarde data }) */
+  async function loadModelSnel(render) {
+    let bewaard = null;
+    try { bewaard = JSON.parse(localStorage.getItem(DATA_KEY) || 'null'); } catch (e) {}
+    if (bewaard && bewaard.raw) {
+      try {
+        zetSeizoenTitel(bewaard.raw.instellingen);
+        render(Scoring.buildModel(bewaard.raw), { vers: false, ts: bewaard.ts });
+      } catch (e) { /* oude/kapotte cache: gewoon wachten op verse data */ }
     }
-    // DEMO: laad de gebundelde CSV's.
-    const base = './data/';
-    const [duiven, resultaten, punten, deelnemers] = await Promise.all([
-      fetchText(base + 'duiven.csv'),
-      fetchText(base + 'resultaten.csv'),
-      fetchText(base + 'puntentabel.csv'),
-      fetchText(base + 'deelnemers.csv')
-    ]);
-    const raw = {
-      duiven: Scoring.parseCSV(duiven),
-      resultaten: Scoring.parseCSV(resultaten),
-      punten: Scoring.parseCSV(punten),
-      deelnemers: Scoring.parseCSV(deelnemers)
-    };
-    return { model: Scoring.buildModel(raw), live: false };
+    const { model } = await loadModel();
+    render(model, { vers: true, ts: Date.now() });
   }
 
   /** Het seizoen staat in de Sheet (Instellingen › seizoen); config.js is alleen de
@@ -221,14 +219,6 @@
   }
 
   /**
-   * Slaat de seizoensvoorbereiding op: vervangt de deelnemers- en duivenlijst.
-   * @param {{deelnemers:string[], duiven:Array<{ring_lang:string, ring_kort:string}>, wisUitslagen?:boolean}} payload
-   */
-  function saveSeizoen(payload) {
-    return postJSON(Object.assign({ action: 'setupSeizoen' }, payload));
-  }
-
-  /**
    * Legt een keuze van het keuzemoment vast: zet naam + team op een duif.
    * @param {{ring_kort?:string, ring_lang?:string, naam:string, team:string}} payload
    */
@@ -271,15 +261,20 @@
     return postJSON(Object.assign({ action: 'setDuiven' }, payload));
   }
 
+  /** Verwijdert één hele vlucht (etappe) uit de uitslagen. */
+  function verwijderVlucht(payload) {
+    return postJSON(Object.assign({ action: 'verwijderVlucht' }, payload));
+  }
+
   /** Stap 4: teamnamen vervangen; hernoemingen gaan mee naar de duiven. */
   function setDeelnemers(payload) {
     return postJSON(Object.assign({ action: 'setDeelnemers' }, payload));
   }
 
   global.API = {
-    loadModel, submitUitslag, saveSeizoen, kiesDuif,
+    loadModel, loadModelSnel, submitUitslag, kiesDuif,
     hernoemDuif, verwijderUitTeam, resetDuiven, setInstellingen,
-    archiveerSeizoen, nieuwSeizoen, setDuiven, setDeelnemers,
+    archiveerSeizoen, nieuwSeizoen, setDuiven, setDeelnemers, verwijderVlucht,
     vraagCode, isLive
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -2,3 +2,8 @@
 *.log
 .claude/
 duiven_seed.json
+
+# Persoonlijke gegevens horen niet in deze openbare repo (blijven lokaal staan)
+archief/
+Duivencompetitie-export/
+*.xlsx

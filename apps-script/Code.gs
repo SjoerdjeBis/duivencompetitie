@@ -12,9 +12,9 @@
  *   Deelnemers     : naam
  *   Instellingen   : sleutel | waarde   (o.a. seizoen, duivenPerTeam, archief_<jaar>)
  *
- * Deployen: Extensies → Apps Script → plak dit → Implementeren → Nieuwe implementatie
- *   → type "Web-app" → Uitvoeren als: ikzelf → Toegang: "Iedereen" → kopieer /exec-URL
- *   en zet die in config.js (API_URL).
+ * Deployen (project "DASN", gekoppeld aan de Sheet): plak dit in Code.gs → opslaan →
+ *   Implementeren → Implementaties beheren → potlood → Versie: "Nieuwe versie" →
+ *   Implementeren. NIET "Nieuwe implementatie", want dan verandert de /exec-URL.
  *
  * CORS-noot: de site doet GET (werkt direct) en POST met Content-Type text/plain
  * (vermijdt een preflight die Apps Script niet kan beantwoorden); de body is JSON-tekst.
@@ -37,6 +37,8 @@ var TAB = {
   deelnemers: 'Deelnemers',
   instellingen: 'Instellingen'
 };
+
+var MAX_NAAM = 40; // maximale lengte van een duivennaam
 
 /** Leest een tabblad als array van objecten op basis van de kopregel. */
 function readSheet(naam) {
@@ -99,7 +101,7 @@ function doGet(e) {
 /** POST-router. Kiest op basis van payload.action:
  *   uitslag (standaard) · checkCode · kiesDuif · hernoemDuif · verwijderUitTeam ·
  *   resetDuiven · setInstellingen · archiveerSeizoen · nieuwSeizoen · setDuiven ·
- *   setDeelnemers · setupSeizoen (oud, vervangt alles in één keer). */
+ *   setDeelnemers · verwijderVlucht. */
 function doPost(e) {
   var lock = LockService.getScriptLock();
   try {
@@ -119,7 +121,6 @@ function doPost(e) {
     delete payload.code;
     switch (payload.action) {
       case 'checkCode': return jsonOut({ ok: true });
-      case 'setupSeizoen': return setupSeizoen(payload);
       case 'kiesDuif': return kiesDuif(payload);
       case 'hernoemDuif': return hernoemDuif(payload);
       case 'verwijderUitTeam': return verwijderUitTeam(payload);
@@ -129,6 +130,7 @@ function doPost(e) {
       case 'nieuwSeizoen': return nieuwSeizoen(payload);
       case 'setDuiven': return setDuiven(payload);
       case 'setDeelnemers': return setDeelnemers(payload);
+      case 'verwijderVlucht': return verwijderVlucht(payload);
       default: return saveUitslag(payload);
     }
   } catch (err) {
@@ -177,15 +179,21 @@ function saveUitslag(payload) {
     // meerdere delen worden ingestuurd (bv. eerst plek 1-9, daarna de rest),
     // zolang dezelfde duif of dezelfde plaats niet twee keer voorkomt.
     if (bestaande.length) {
+      // Sleutel per duif: bij een botsing staat het lange ringnummer in naam_override,
+      // zodat twee duiven met dezelfde laatste 3 cijfers elkaar niet blokkeren.
+      var duifKey = function (r) {
+        var ov = String(r.naam_override || '').trim();
+        return /\d/.test(ov) ? ov : String(r.ring_kort || '').trim();
+      };
       var ringGezet = {}, posGezet = {};
       bestaande.forEach(function (r) {
-        var rk = String(r.ring_kort || '').trim();
+        var rk = duifKey(r);
         if (rk) ringGezet[rk] = true;
         posGezet[Number(r.positie)] = true;
       });
       var dubbeleDuiven = [], dubbelePlaatsen = [];
       finishers.forEach(function (f) {
-        var rk = String(f.ring_kort || '').trim();
+        var rk = duifKey(f);
         if (rk && ringGezet[rk] && dubbeleDuiven.indexOf(rk) < 0) dubbeleDuiven.push(rk);
         var p = Number(f.positie);
         if (posGezet[p] && dubbelePlaatsen.indexOf(p) < 0) dubbelePlaatsen.push(p);
@@ -226,42 +234,6 @@ function writeTab(naam, header, rows2D) {
   if (rows2D.length) sh.getRange(2, 1, rows2D.length, header.length).setValues(rows2D);
 }
 
-/** Seizoensstart: vervang de deelnemers- en duivenlijst.
- *  Body: { deelnemers: [naam, ...],
- *          duiven: [ {ring_lang, ring_kort}, ... ],
- *          wisUitslagen?: bool }
- *  De duiven krijgen (nog) lege naam/teams — die volgen op het keuzemoment. */
-function setupSeizoen(payload) {
-    var deelnemers = (payload.deelnemers || [])
-      .map(function (n) { return String(n || '').trim(); })
-      .filter(Boolean);
-    var duiven = (payload.duiven || []).filter(function (d) { return d && d.ring_lang; });
-
-    if (!deelnemers.length) throw new Error('Geen deelnemers meegegeven.');
-    if (!duiven.length) throw new Error('Geen duiven meegegeven.');
-
-    // Deelnemers-tabblad: header [naam].
-    writeTab(TAB.deelnemers, ['naam'], deelnemers.map(function (n) { return [n]; }));
-
-    // Duivendatabase-tabblad: header [naam, ring_lang, ring_kort, teams]; naam/teams nog leeg.
-    var duifRows = duiven.map(function (d) {
-      return ['', String(d.ring_lang).trim(), String(d.ring_kort || '').trim(), ''];
-    });
-    writeTab(TAB.duiven, ['naam', 'ring_lang', 'ring_kort', 'teams'], duifRows);
-
-    // Nieuw seizoen: optioneel de uitslagen van vorig jaar wissen.
-    if (payload.wisUitslagen) {
-      writeTab(TAB.resultaten, ['vlucht', 'positie', 'ring_kort', 'naam_override'], []);
-    }
-
-    return jsonOut({
-      ok: true,
-      deelnemers: deelnemers.length,
-      duiven: duiven.length,
-      uitslagenGewist: !!payload.wisUitslagen
-    });
-}
-
 /** Keuzemoment: zet naam + team op één duif in de Duivendatabase.
  *  Body: { ring_kort?, ring_lang?, naam, team }
  *  Zoekt de rij op ring_lang (voorkeur) of ring_kort en vult naam + teams in.
@@ -275,6 +247,12 @@ function kiesDuif(payload) {
     var kort = String(payload.ring_kort || '').trim();
     if (!team) throw new Error('Geen team meegegeven.');
     if (!lang && !kort) throw new Error('Geen ringnummer meegegeven.');
+    if (naam.length > MAX_NAAM) throw new Error('Die naam is te lang (max ' + MAX_NAAM + ' tekens).');
+    // Via een teamlink (zonder beheercode) mag alleen een bestaand team kiezen.
+    if (payload.exclusief) {
+      var bekend = readSheet(TAB.deelnemers).some(function (d) { return d.naam === team; });
+      if (!bekend) throw new Error('Onbekend team: ' + team + '.');
+    }
 
     var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.duiven);
     if (!sh) throw new Error('Tabblad "' + TAB.duiven + '" niet gevonden.');
@@ -334,6 +312,7 @@ function hernoemDuif(payload) {
     var naam = String(payload.naam || '').trim();
     if (!lang) throw new Error('Geen ringnummer (ring_lang) meegegeven.');
     if (!naam) throw new Error('Geen nieuwe naam meegegeven.');
+    if (naam.length > MAX_NAAM) throw new Error('Die naam is te lang (max ' + MAX_NAAM + ' tekens).');
 
     var ctx = duivenSheetCtx();
     for (var r = 1; r < ctx.values.length; r++) {
@@ -518,4 +497,21 @@ function setDeelnemers(payload) {
       }
     }
     return jsonOut({ ok: true, deelnemers: namen.length, duivenAangepast: aangepast });
+}
+
+/** Verwijdert alle regels van één vlucht (etappe) uit "Resultaten".
+ *  Body: { vlucht: <nummer> } */
+function verwijderVlucht(payload) {
+    var vlucht = Number(payload.vlucht);
+    if (!vlucht) throw new Error('Geen geldig vluchtnummer.');
+    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.resultaten);
+    if (!sh) throw new Error('Tabblad "' + TAB.resultaten + '" niet gevonden.');
+    var all = sh.getDataRange().getValues();
+    var c = all[0].map(function (h) { return String(h).trim(); }).indexOf('vlucht');
+    var weg = 0;
+    for (var r = all.length - 1; r >= 1; r--) {
+      if (Number(all[r][c]) === vlucht) { sh.deleteRow(r + 1); weg++; }
+    }
+    if (!weg) throw new Error('Vlucht ' + vlucht + ' staat niet in de uitslagen.');
+    return jsonOut({ ok: true, vlucht: vlucht, verwijderd: weg });
 }

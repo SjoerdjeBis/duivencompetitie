@@ -1,0 +1,13 @@
+{
+  "name": "Duivencompetitie · Tussenstand",
+  "short_name": "Duiven",
+  "description": "De tussenstand van de duivencompetitie van Een Goed Stel Duifjes.",
+  "start_url": "./tussenstandopen.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#2f6d56",
+  "icons": [
+    { "src": "./assets/logo.png", "sizes": "352x352", "type": "image/png", "purpose": "any" }
+  ]
+}

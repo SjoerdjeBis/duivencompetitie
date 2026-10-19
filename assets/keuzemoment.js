@@ -46,8 +46,14 @@
     idx: 0,             // welk team is aan de beurt
     methode: null,      // 'zelf' | 'willekeurig'
     bezig: false,       // animatie loopt
-    pendingNaam: null   // callback wanneer naam is ingevuld
+    pendingNaam: null,  // callback wanneer naam is ingevuld
+    namen: new Set()    // namen die al aan een duif hangen (kleine letters)
   };
+
+  /** Onthoudt welke duivennamen al bestaan (voor de waarschuwing bij een dubbele naam). */
+  function zetNamen(duiven) {
+    state.namen = new Set(duiven.filter(d => d.naam).map(d => d.naam.trim().toLowerCase()));
+  }
 
   /* ============ Schermwissels ============ */
   function toon(schermId) {
@@ -348,10 +354,16 @@
     $('duif-naam').classList.remove('leeg-fout');
     const duif = state.pendingNaam.duif;
     const team = huidigTeam();
+    if (state.namen.has(naam.toLowerCase()) &&
+        !window.confirm('Er is al een duif die "' + naam + '" heet. Toch deze naam gebruiken?\n\n' +
+          'Tip: maak hem uniek, bv. "' + naam + ' 2".')) {
+      $('duif-naam').focus();
+      return;
+    }
 
     const knop = $('naam-ok'); knop.disabled = true; const oud = knop.textContent; knop.textContent = 'Opslaan…';
     try {
-      if (LIVE) await API.kiesDuif({ ring_lang: duif.ring_lang, ring_kort: duif.ring_kort, naam: naam, team: team, exclusief: TEAMMODE });
+      await API.kiesDuif({ ring_lang: duif.ring_lang, ring_kort: duif.ring_kort, naam: naam, team: team, exclusief: TEAMMODE });
       commitPick(duif, naam);
       $('naam-overlay').classList.add('verborgen');
       state.pendingNaam = null;
@@ -376,6 +388,7 @@
 
   function commitPick(duif, naam) {
     haalUitBeschikbaar(duif);
+    state.namen.add(naam.toLowerCase());
     const team = huidigTeam();
     (state.takenByTeam[team] = state.takenByTeam[team] || [])
       .push({ ring_kort: duif.ring_kort, ring_lang: duif.ring_lang, naam: naam });
@@ -412,35 +425,29 @@
     });
   }
 
-  function kopieerKeuze() {
-    const regels = [];
-    state.order.forEach(t => (state.takenByTeam[t] || []).forEach(p =>
-      regels.push([p.naam, p.ring_lang, p.ring_kort, t].join('\t'))));
-    navigator.clipboard.writeText(regels.join('\n'))
-      .then(() => alert('Alle keuzes gekopieerd (naam, lang, kort, team) — plak in de Duivendatabase.'))
-      .catch(e => alert('Kopiëren lukte niet: ' + e.message));
-  }
-
   /* ============ Realtime beschikbaarheid (teampagina) ============ */
+  // Met alle teams tegelijk open is dit de zwaarste belasting van de API. Daarom:
+  // elke 8 s alleen terwijl dit team in het nummerrooster kijkt, anders elke 30 s,
+  // en niet als het tabblad op de achtergrond staat.
   function startRealtime() {
     if (!LIVE || !TEAMMODE) return;
+    let laatste = Date.now();
     setInterval(async () => {
       if (document.hidden || state.bezig || state.pendingNaam) return;
+      const kijktInRooster = state.methode === 'zelf' && !$('paneel-zelf').classList.contains('verborgen');
+      if (Date.now() - laatste < (kijktInRooster ? 8000 : 30000)) return;
+      laatste = Date.now();
       try {
         const { model } = await API.loadModel();
-        const avail = [];
-        model.duiven.forEach(d => {
-          if (d.teams && d.teams.length) return;   // al bezet
-          avail.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
-        });
-        state.available = avail;
-        $('zelf-telling').textContent = '(' + avail.length + ')';
+        state.available = model.duiven
+          .filter(d => !(d.teams && d.teams.length))       // nog vrij
+          .map(d => ({ ring_kort: d.ring_kort, ring_lang: d.ring_lang }));
+        zetNamen(model.duiven);
+        $('zelf-telling').textContent = '(' + state.available.length + ')';
         $('beurt-voortgang').textContent = voortgangTekst();
-        if (state.methode === 'zelf' && !$('paneel-zelf').classList.contains('verborgen')) {
-          rendarZelfGrid();
-        }
+        if (kijktInRooster) rendarZelfGrid();
       } catch (e) { /* stil: volgende tick probeert opnieuw */ }
-    }, 5000);
+    }, 2000);
   }
 
   /* ============ Hulp ============ */
@@ -450,19 +457,15 @@
   }
 
   function vulVoorraad(model) {
-    if (LIVE) {
-      model.duiven.forEach(d => {
-        if (d.teams && d.teams.length) {
-          d.teams.forEach(t => (state.takenByTeam[t] = state.takenByTeam[t] || [])
-            .push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang, naam: d.naam }));
-        } else {
-          state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
-        }
-      });
-    } else {
-      // Demo: alles beschikbaar zodat je kunt oefenen.
-      model.duiven.forEach(d => state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang }));
-    }
+    model.duiven.forEach(d => {
+      if (d.teams && d.teams.length) {
+        d.teams.forEach(t => (state.takenByTeam[t] = state.takenByTeam[t] || [])
+          .push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang, naam: d.naam }));
+      } else {
+        state.available.push({ ring_kort: d.ring_kort, ring_lang: d.ring_lang });
+      }
+    });
+    zetNamen(model.duiven);
   }
 
   /* ============ Init ============ */
@@ -505,10 +508,7 @@
     }
 
     banner.className = 'banner' + (live ? ' live' : '');
-    banner.innerHTML = live
-      ? 'Live · richtgetal ' + state.perTeam + ' duiven per team (aan te passen op Voorbereiden).'
-      : 'Demo-modus · de teamlinks werken, maar keuzes worden nog niet opgeslagen ' +
-        '(stel API_URL in <code>config.js</code> in om echt op te slaan).';
+    banner.textContent = 'Live · maximaal ' + state.perTeam + ' duiven per team (aan te passen op Voorbereiden).';
   }
 
   /* ---- Teampagina ---- */
@@ -533,10 +533,8 @@
     document.title = TEAM + ' — Keuzemoment';
 
     banner.className = 'banner' + (live ? ' live' : '');
-    banner.innerHTML = live
-      ? 'Stel hier jouw winnende team van duiven samen. Je mag er <strong>' +
-        state.perTeam + '</strong> kiezen.'
-      : 'Demo-modus · oefen vrij; keuzes worden nog niet opgeslagen.';
+    banner.innerHTML = 'Stel hier jouw winnende team van duiven samen. Je mag er <strong>' +
+      state.perTeam + '</strong> kiezen.';
 
     state.order = [TEAM];
     state.idx = 0;
@@ -545,7 +543,6 @@
       b.addEventListener('click', () => kiesMethode(b.dataset.methode)));
     $('kies-knop').addEventListener('click', trekEi);
     $('team-klaar').addEventListener('click', () => { state.idx++; beginTeam(); });
-    $('kopieer-keuze').addEventListener('click', kopieerKeuze);
 
     toon('scherm-beurt');
     beginTeam();

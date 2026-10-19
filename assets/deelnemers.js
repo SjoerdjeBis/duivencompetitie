@@ -6,7 +6,6 @@
   document.getElementById('titel').textContent = cfg.SEIZOEN || 'Duivencompetitie';
   const $ = id => document.getElementById(id);
 
-  let LIVE = false;
   let duiven = [];        // [{naam, ring_lang, ring_kort, teams[], perVlucht{}, totaal}]
   let etappes = [];       // [vluchtnr, ...]
   let teamVolgorde = [];  // teamnamen in klassementsvolgorde (beste eerst)
@@ -173,10 +172,12 @@
     if (!naam) { $('wz-naam').classList.add('leeg-fout'); $('wz-naam').focus(); return; }
     const d = modalDuif;
     if (naam === d.naam) { sluitNaamModal(); return; }
+    const dubbel = duiven.some(x => x !== d && x.naam && x.naam.trim().toLowerCase() === naam.toLowerCase());
+    if (dubbel && !window.confirm('Er is al een duif die "' + naam + '" heet. Toch deze naam gebruiken?')) return;
 
     const knop = $('wz-ok'); knop.disabled = true; const oud = knop.textContent; knop.textContent = 'Opslaan…';
     try {
-      if (LIVE) await API.hernoemDuif({ ring_lang: d.ring_lang, naam: naam });
+      await API.hernoemDuif({ ring_lang: d.ring_lang, naam: naam });
       d.naam = naam;
       sluitNaamModal();
       render();
@@ -193,7 +194,7 @@
     if (!window.confirm('"' + naam + '" uit team ' + team + ' halen?\n\n' +
         'De duif blijft bestaan; alleen de koppeling met dit team verdwijnt.')) return;
     try {
-      if (LIVE) await API.verwijderUitTeam({ ring_lang: d.ring_lang, team: team });
+      await API.verwijderUitTeam({ ring_lang: d.ring_lang, team: team });
       d.teams = d.teams.filter(t => t !== team);
       render();
     } catch (err) {
@@ -205,19 +206,15 @@
   async function init() {
     const banner = $('banner');
     try {
-      const { model, live } = await API.loadModel();
-      LIVE = live;
+      const { model } = await API.loadModel();
       const pv = Scoring.duivenPerVlucht(model);
       etappes = pv.vluchten;
       duiven = pv.duiven;
       teamVolgorde = Scoring.computeStandings(model).klassement.map(r => r.deelnemer);
       if (!teamVolgorde.length) teamVolgorde = [...model.roster];
 
-      banner.className = 'banner' + (live ? ' live' : '');
-      banner.innerHTML = live
-        ? 'Live · wijzigingen worden direct in de Google Sheet vastgelegd.'
-        : 'Demo-modus · je kunt hier oefenen, maar wijzigingen worden <strong>niet</strong> ' +
-          'opgeslagen (stel API_URL in <code>config.js</code> in om live te gaan).';
+      banner.className = 'banner live';
+      banner.textContent = 'Live · gegevens uit de Google Sheet.';
 
       render();
 

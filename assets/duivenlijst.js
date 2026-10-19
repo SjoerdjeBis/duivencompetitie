@@ -147,15 +147,13 @@
   async function init() {
     const banner = $('banner');
     try {
-      const { model, live } = await API.loadModel();
+      const { model } = await API.loadModel();
       const pv = Scoring.duivenPerVlucht(model);
       etappes = pv.vluchten;
       duiven = pv.duiven;
 
-      banner.className = 'banner' + (live ? ' live' : '');
-      banner.innerHTML = live
-        ? 'Live · gegevens uit de Google Sheet.'
-        : 'Demo-modus · gebundelde voorbeelddata (stel API_URL in <code>config.js</code> in om live te gaan).';
+      banner.className = 'banner live';
+      banner.textContent = 'Live · gegevens uit de Google Sheet.';
 
       render();
     } catch (err) {

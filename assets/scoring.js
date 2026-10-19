@@ -1,39 +1,15 @@
 /*
  * scoring.js — gedeelde data- en rekenlogica voor de duivencompetitie.
  *
- * Bewust framework-vrij en zonder build-stap, zodat het direct op GitHub Pages
- * draait én letterlijk dezelfde berekening gebruikt wordt voor de live-modus
- * (data uit de Apps Script API) en de demo-modus (gebundelde CSV's in /data).
+ * Bewust framework-vrij en zonder build-stap, zodat het direct op GitHub Pages draait.
+ * Een duif wordt overal herkend aan zijn LANGE ringnummer (ring_lang): namen kunnen
+ * dubbel voorkomen, korte codes (laatste 3 cijfers) ook.
  *
  * De Apps Script API levert alleen de RUWE tabellen (duiven, resultaten,
  * puntentabel, deelnemers); alle afgeleide standen worden hier berekend.
  */
 (function (global) {
   'use strict';
-
-  /** Parse CSV-tekst naar een array van objecten op basis van de headerrij. */
-  function parseCSV(text) {
-    const rows = [];
-    let row = [], cur = '', q = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      if (q) {
-        if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
-        else cur += c;
-      } else {
-        if (c === '"') q = true;
-        else if (c === ',') { row.push(cur); cur = ''; }
-        else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
-        else if (c !== '\r') cur += c;
-      }
-    }
-    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
-    if (!rows.length) return [];
-    const header = rows[0].map(h => h.trim());
-    return rows.slice(1)
-      .filter(r => r.some(c => c.trim() !== ''))
-      .map(r => Object.fromEntries(header.map((h, i) => [h, (r[i] || '').trim()])));
-  }
 
   /** Splits een teamveld ("A | B") naar een schone lijst deelnemers. */
   function splitTeams(s) {
@@ -53,10 +29,12 @@
     }));
 
     const byKort = {};   // "765" -> [duif, ...]  (lijst i.v.m. mogelijke botsing)
-    const byNaam = {};
+    const byLang = {};   // "26-8409102" -> duif
+    const byNaam = {};   // alleen nog voor oude uitslagen waarin een naam als keuze staat
     duiven.forEach(d => {
       if (d.ring_kort) (byKort[d.ring_kort] = byKort[d.ring_kort] || []).push(d);
-      if (d.naam) byNaam[d.naam] = d;
+      if (d.ring_lang) byLang[d.ring_lang] = d;
+      if (d.naam && !byNaam[d.naam]) byNaam[d.naam] = d;
     });
 
     const punten = {};
@@ -86,15 +64,21 @@
     // Beheer-instellingen (bv. duivenPerTeam). Komen mee uit de API; in demo leeg.
     const instellingen = raw.instellingen || {};
 
-    return { duiven, byKort, byNaam, punten, roster, deelnemers, vluchten, instellingen };
+    return { duiven, byKort, byLang, byNaam, punten, roster, deelnemers, vluchten, instellingen };
   }
 
   /** Zoekt de duif bij een finisher-regel.
-   *  naam_override heeft voorrang: zo lost de invoer een botsing op twee duiven
-   *  met hetzelfde korte ringnummer eenduidig op. Daarna pas op kort ringnummer. */
+   *  naam_override heeft voorrang: bij een botsing (twee duiven met dezelfde laatste
+   *  3 cijfers) staat daar het lange ringnummer van de gekozen duif. Oudere uitslagen
+   *  hebben er een naam in staan; die herkennen we alleen binnen de botsende duiven.
+   *  Daarna pas op kort ringnummer. */
   function resolveDuif(model, finisher) {
-    if (finisher.naam_override && model.byNaam[finisher.naam_override]) {
-      return model.byNaam[finisher.naam_override];
+    const ov = finisher.naam_override;
+    if (ov && model.byLang[ov]) return model.byLang[ov];
+    if (ov) {
+      const kandidaten = model.byKort[finisher.ring_kort] || [];
+      const opNaam = kandidaten.find(d => d.naam === ov) || (!kandidaten.length && model.byNaam[ov]);
+      if (opNaam) return opNaam;
     }
     if (finisher.ring_kort && model.byKort[finisher.ring_kort]) {
       return model.byKort[finisher.ring_kort][0];
@@ -110,7 +94,7 @@
   function computeStandings(model) {
     const totaal = {};                 // deelnemer -> totaal punten
     const perVlucht = {};              // deelnemer -> {vluchtnr -> punten}
-    const duifTotaal = {};             // duifnaam -> {naam, teams, totaal}
+    const duifTotaal = {};             // ring_lang (of naam) -> {naam, ring_kort, teams, totaal}
     model.roster.forEach(d => { totaal[d] = 0; perVlucht[d] = {}; });
 
     model.vluchten.forEach(v => {
@@ -119,7 +103,9 @@
         const pts = model.punten[f.positie] || 0;
         f._duif = duif; f._punten = pts; // verrijking voor weergave
         if (duif.naam) {
-          const dt = duifTotaal[duif.naam] || (duifTotaal[duif.naam] = { naam: duif.naam, teams: duif.teams, totaal: 0 });
+          const key = duif.ring_lang || duif.naam;
+          const dt = duifTotaal[key] || (duifTotaal[key] = {
+            naam: duif.naam, ring_kort: duif.ring_kort || f.ring_kort, teams: duif.teams, totaal: 0 });
           dt.totaal += pts;
         }
         duif.teams.forEach(t => {
@@ -218,5 +204,5 @@
     return out;
   }
 
-  global.Scoring = { parseCSV, splitTeams, buildModel, computeStandings, resolveDuif, duivenMetPunten, duivenPerVlucht };
+  global.Scoring = { splitTeams, buildModel, computeStandings, resolveDuif, duivenMetPunten, duivenPerVlucht };
 })(typeof window !== 'undefined' ? window : globalThis);
